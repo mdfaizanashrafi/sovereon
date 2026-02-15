@@ -48,8 +48,8 @@ class ApiClient {
   private async request<T>(
     method: string,
     endpoint: string,
-    body?: any
-  ): Promise<T> {
+    body?: Record<string, unknown>
+  ): Promise<ApiResponse<T>> {
     const url = `${this.baseUrl}${endpoint}`;
     const options: RequestInit = {
       method,
@@ -100,7 +100,7 @@ class ApiClient {
     return this.request('/api/users/me', 'GET');
   }
 
-  async updateProfile(data: any) {
+  async updateProfile(data: Record<string, unknown>) {
     return this.request('/api/users/profile', 'PUT', data);
   }
 
@@ -113,7 +113,7 @@ class ApiClient {
     return this.request(`/api/orders/${id}`, 'GET');
   }
 
-  async createOrder(data: any) {
+  async createOrder(data: Record<string, unknown>) {
     return this.request('/api/orders', 'POST', data);
   }
 
@@ -131,7 +131,7 @@ class ApiClient {
     return this.request('/api/subscriptions', 'GET');
   }
 
-  async createSubscription(data: any) {
+  async createSubscription(data: Record<string, unknown>) {
     return this.request('/api/subscriptions', 'POST', data);
   }
 
@@ -149,7 +149,7 @@ class ApiClient {
     return this.request('/api/payments', 'GET');
   }
 
-  async createPayment(data: any) {
+  async createPayment(data: Record<string, unknown>) {
     return this.request('/api/payments', 'POST', data);
   }
 
