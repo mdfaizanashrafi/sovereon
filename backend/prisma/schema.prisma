@@ -1,0 +1,182 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  firstName     String?
+  lastName      String?
+  companyName   String?
+  phone         String?
+  role          String    @default("user") // user, admin
+  emailVerified Boolean   @default(false)
+  status        String    @default("active") // active, inactive, suspended
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  // Relations
+  orders        Order[]
+  invoices      Invoice[]
+  subscriptions Subscription[]
+  payments      Payment[]
+  notifications Notification[]
+  auditLogs     AuditLog[]
+
+  @@map("users")
+}
+
+model Service {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  description  String?
+  category     String
+  pricingModel String   @default("fixed") // fixed, custom, monthly, usage-based
+  basePrice    Float
+  isActive     Boolean  @default(true)
+  features     String?  // JSON stringified
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  orders        Order[]
+  subscriptions Subscription[]
+
+  @@map("services")
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  orderNumber   String   @unique
+  userId        String
+  serviceId     String?
+  quantity      Int      @default(1)
+  unitPrice     Float
+  totalAmount   Float
+  status        String   @default("pending") // pending, processing, completed, cancelled, failed
+  paymentStatus String   @default("unpaid") // unpaid, paid, partially_paid, refunded
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service Service? @relation(fields: [serviceId], references: [id])
+  invoice Invoice?
+  payment Payment[]
+
+  @@map("orders")
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  invoiceNumber String   @unique
+  userId        String
+  orderId       String?  @unique
+  amount        Float
+  tax           Float    @default(0)
+  total         Float
+  status        String   @default("draft") // draft, sent, viewed, paid, overdue, cancelled
+  issuedDate    DateTime?
+  dueDate       DateTime?
+  paidDate      DateTime?
+  paymentMethod String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order   Order?  @relation(fields: [orderId], references: [id])
+  payment Payment[]
+
+  @@map("invoices")
+}
+
+model Subscription {
+  id                 String    @id @default(cuid())
+  userId            String
+  serviceId         String
+  planName          String
+  price             Float
+  billingCycle      String    @default("monthly") // monthly, quarterly, yearly
+  status            String    @default("active") // active, paused, cancelled, past_due
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  cancelledAt       DateTime?
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id])
+
+  @@map("subscriptions")
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  invoiceId       String?
+  orderId         String?
+  userId          String
+  amount          Float
+  currency        String   @default("USD")
+  paymentMethod   String   @default("credit_card") // credit_card, bank_transfer, wallet
+  stripePaymentId String?
+  status          String   @default("pending") // pending, succeeded, failed, refunded
+  metadata        String?  // JSON stringified
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  invoice Invoice? @relation(fields: [invoiceId], references: [id])
+  order   Order?  @relation(fields: [orderId], references: [id])
+
+  @@map("payments")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // order_placed, invoice_created, payment_received, etc
+  title     String
+  message   String
+  data      String?  // JSON stringified
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  action       String   // CREATE, UPDATE, DELETE, LOGIN, etc
+  resourceType String
+  resourceId   String?
+  changes      String?  // JSON stringified
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  // Relations
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
