@@ -65,6 +65,62 @@ export const teamMembers = [
     description: 'Manages client relationships, ensures customer satisfaction, and leads support initiatives.',
     image: '[PLACEHOLDER_TEAM_IMAGE_2]',
   },
+  {
+    name: 'Jawed Khan',
+    role: 'Project Manager',
+    department: 'Project Management',
+    description: 'Leads project planning, execution, and delivery to ensure timely and successful project completion.',
+    image: '[PLACEHOLDER_TEAM_IMAGE_3]',
+  },
+  {
+    name: 'Karan Raj',
+    role: 'Video Graphic Manager',
+    department: 'Creative Services',
+    description: 'Manages video production and graphic design to create stunning visual content.',
+    image: '[PLACEHOLDER_TEAM_IMAGE_4]',
+  },
+  {
+    name: 'Zahid Sheikh',
+    role: 'AI & Graphic Designer',
+    department: 'Design & AI',
+    description: 'Combines AI expertise with graphic design to deliver innovative visual solutions.',
+    image: '[PLACEHOLDER_TEAM_IMAGE_5]',
+  },
+  {
+    name: 'Kaify',
+    role: 'Data Analyst',
+    department: 'Data Analytics',
+    description: 'Analyzes data insights to drive strategic business decisions and optimization.',
+    image: '[PLACEHOLDER_TEAM_IMAGE_6]',
+  },
+  {
+    name: 'Danish Khan',
+    role: 'Full Stack Developer',
+    department: 'Development',
+    description: 'Develops end-to-end solutions with expertise in both frontend and backend technologies.',
+    image: '[PLACEHOLDER_TEAM_IMAGE_7]',
+  },
+  {
+    name: 'Ashu Khan',
+    role: 'Social Media Manager & Video Editor Expert',
+    department: 'Digital Marketing',
+    description: 'Manages social media presence and creates expert-level video content for engagement.',
+    image: '[PLACEHOLDER_TEAM_IMAGE_8]',
+  },
+  {
+    name: 'Shadan Ghyas',
+    role: 'PR Manager',
+    department: 'Public Relations',
+    description: 'Manages company communications and public relations to build brand reputation.',
+    image: '[PLACEHOLDER_TEAM_IMAGE_9]',
+  },
+  {
+    name: 'Mobeen',
+    role: 'Sales Executive',
+    department: 'Sales',
+    description: 'Drives business growth through strategic sales initiatives and client relationship building.',
+    image: '[PLACEHOLDER_TEAM_IMAGE_10]',
+  },
 ];
 
 // ============================================================================
