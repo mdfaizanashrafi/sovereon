@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 export default function OAuthCallbackPage() {
   const navigate = useNavigate();
   const { setToken, setUser } = useAuth();
@@ -22,17 +24,48 @@ export default function OAuthCallbackPage() {
     }
 
     if (token && email) {
-      // Store token and user info
+      // Store token
       setToken(token);
-      
-      setUser({
-        email,
-        name: name || email.split('@')[0],
-        id: 'oauth-user',
-      });
+      localStorage.setItem('token', token);
 
-      // Redirect to dashboard
-      navigate('/portal/dashboard');
+      // Fetch user from backend to get proper user data
+      const fetchUser = async () => {
+        try {
+          const response = await fetch(`${API_URL}/users/me`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const user = data.data || data;
+            setUser(user);
+          } else {
+            // If profile fetch fails, store minimal user data
+            setUser({
+              email,
+              name: name || email.split('@')[0],
+              id: 'oauth-user',
+            });
+          }
+
+          // Redirect to dashboard
+          setTimeout(() => navigate('/portal/dashboard'), 500);
+        } catch (err) {
+          console.error('Error fetching user profile:', err);
+          // Still set minimal user data and navigate
+          setUser({
+            email,
+            name: name || email.split('@')[0],
+            id: 'oauth-user',
+          });
+          setTimeout(() => navigate('/portal/dashboard'), 500);
+        }
+      };
+
+      fetchUser();
     } else {
       setError('Unable to complete authentication. Please try again.');
       setTimeout(() => navigate('/auth/login'), 3000);

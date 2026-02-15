@@ -14,10 +14,12 @@ router.get('/me', authMiddleware, asyncHandler(async (req: Request, res: Respons
     select: {
       id: true,
       email: true,
+      name: true,
       firstName: true,
       lastName: true,
       companyName: true,
       phone: true,
+      provider: true,
       role: true,
       status: true,
       createdAt: true,

@@ -6,6 +6,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { mockAuthApi, type User, type Order, type Subscription, type Invoice } from '@/services/mockAuthApi';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 interface AuthContextType {
   // State
   user: User | null;
@@ -233,55 +235,161 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Get orders
   const getOrders = useCallback(async (): Promise<Order[]> => {
-    if (!user) return [];
-    
     try {
-      const response = await mockAuthApi.getOrders(user.id);
-      return response.orders || [];
+      const token = localStorage.getItem('token');
+      if (!token) return [];
+
+      const response = await fetch(`${API_URL}/orders`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setUser(null);
+          localStorage.removeItem('token');
+        }
+        return [];
+      }
+
+      const data = await response.json();
+      return data.data || [];
     } catch (error) {
-      console.error('Failed to load orders');
+      console.error('Failed to load orders:', error);
       return [];
     }
-  }, [user]);
+  }, []);
 
   // Get subscriptions
   const getSubscriptions = useCallback(async (): Promise<Subscription[]> => {
-    if (!user) return [];
-    
     try {
-      const response = await mockAuthApi.getSubscriptions(user.id);
-      return response.subscriptions || [];
+      const token = localStorage.getItem('token');
+      if (!token) return [];
+
+      const response = await fetch(`${API_URL}/subscriptions`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setUser(null);
+          localStorage.removeItem('token');
+        }
+        return [];
+      }
+
+      const data = await response.json();
+      return data.data || [];
     } catch (error) {
-      console.error('Failed to load subscriptions');
+      console.error('Failed to load subscriptions:', error);
       return [];
     }
-  }, [user]);
+  }, []);
 
   // Get invoices
   const getInvoices = useCallback(async (): Promise<Invoice[]> => {
-    if (!user) return [];
-    
     try {
-      const response = await mockAuthApi.getInvoices(user.id);
-      return response.invoices || [];
+      const token = localStorage.getItem('token');
+      if (!token) return [];
+
+      const response = await fetch(`${API_URL}/invoices`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setUser(null);
+          localStorage.removeItem('token');
+        }
+        return [];
+      }
+
+      const data = await response.json();
+      return data.data || [];
     } catch (error) {
-      console.error('Failed to load invoices');
+      console.error('Failed to load invoices:', error);
       return [];
     }
-  }, [user]);
+  }, []);
 
   // Get dashboard stats
   const getDashboardStats = useCallback(async () => {
-    if (!user) return null;
-    
     try {
-      const response = await mockAuthApi.getDashboardStats(user.id);
-      return response.stats || null;
+      const token = localStorage.getItem('token');
+      if (!token) return null;
+
+      // Fetch all data from backend
+      const [ordersRes, invoicesRes, subscriptionsRes] = await Promise.all([
+        fetch(`${API_URL}/orders`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch(`${API_URL}/invoices`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }),
+        fetch(`${API_URL}/subscriptions`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        })
+      ]);
+
+      let orders = [];
+      let invoices = [];
+      let subscriptions = [];
+
+      if (ordersRes.ok) {
+        const data = await ordersRes.json();
+        orders = data.data || [];
+      }
+
+      if (invoicesRes.ok) {
+        const data = await invoicesRes.json();
+        invoices = data.data || [];
+      }
+
+      if (subscriptionsRes.ok) {
+        const data = await subscriptionsRes.json();
+        subscriptions = data.data || [];
+      }
+
+      // Calculate stats
+      const totalOrders = orders.length;
+      const activeOrders = orders.filter((o: any) => o.status === 'pending' || o.status === 'processing').length;
+      const completedOrders = orders.filter((o: any) => o.status === 'completed').length;
+      const activeSubscriptions = subscriptions.filter((s: any) => s.status === 'active').length;
+      const totalSpent = orders.reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0);
+      const pendingInvoices = invoices.filter((i: any) => i.status === 'pending' || i.status === 'overdue').length;
+
+      return {
+        totalOrders,
+        activeOrders,
+        completedOrders,
+        activeSubscriptions,
+        totalSpent,
+        pendingInvoices,
+        recentOrders: orders.slice(0, 5),
+        recentInvoices: invoices.slice(0, 5)
+      };
     } catch (error) {
-      console.error('Failed to load dashboard data');
+      console.error('Failed to load dashboard data:', error);
       return null;
     }
-  }, [user]);
+  }, []);
 
   // Refresh user data
   const refreshUser = useCallback(async (): Promise<void> => {
