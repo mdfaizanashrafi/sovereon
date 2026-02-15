@@ -11,7 +11,7 @@ import subscriptionRoutes from './routes/subscriptions.routes';
 import paymentRoutes from './routes/payments.routes';
 
 const app: Express = express();
-const PORT = process.env.PORT || 5000;
+const PORT = parseInt(process.env.PORT || '5000', 10);
 
 // Middleware
 app.use(cors({
