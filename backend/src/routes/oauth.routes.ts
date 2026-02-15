@@ -17,7 +17,11 @@ router.get(
   passport.authenticate('google', { failureRedirect: '/auth/login?error=true' }),
   (req: Request, res: Response) => {
     const user = req.user as any;
-    const token = generateToken(user.id);
+    const token = generateToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role || 'user'
+    });
 
     const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/callback?token=${token}&email=${user.email}&name=${user.name}`;
     res.redirect(redirectUrl);
@@ -36,7 +40,11 @@ router.get(
   passport.authenticate('github', { failureRedirect: '/auth/login?error=true' }),
   (req: Request, res: Response) => {
     const user = req.user as any;
-    const token = generateToken(user.id);
+    const token = generateToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role || 'user'
+    });
 
     const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/auth/callback?token=${token}&email=${user.email}&name=${user.name}`;
     res.redirect(redirectUrl);
