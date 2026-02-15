@@ -6,7 +6,10 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  // Use SQLite for development (DATABASE_URL will contain file path)
+  // Use PostgreSQL for production (DATABASE_URL will contain postgres:// URL)
+  // Prisma automatically detects based on the DATABASE_URL format
+  provider = env("DATABASE_PROVIDER")
   url      = env("DATABASE_URL")
 }
 
