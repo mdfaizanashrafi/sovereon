@@ -8,8 +8,9 @@ const prisma = new PrismaClient();
 
 // Get user's payments
 router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
+  const userId = (req.user as any)?.userId || (req.user as any)?.id;
   const payments = await prisma.payment.findMany({
-    where: { userId: req.user!.userId },
+    where: { userId },
     include: { invoice: true, order: true },
     orderBy: { createdAt: 'desc' }
   });
@@ -20,9 +21,10 @@ router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response)
 router.post('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
   const { invoiceId, orderId, amount, paymentMethod = 'credit_card' } = req.body;
   
+  const userId = (req.user as any)?.userId || (req.user as any)?.id;
   if (invoiceId) {
     const invoice = await prisma.invoice.findUnique({ where: { id: invoiceId } });
-    if (!invoice || invoice.userId !== req.user!.userId) {
+    if (!invoice || invoice.userId !== userId) {
       return res.status(404).json(formatResponse(false, undefined, { code: 'NOT_FOUND', message: 'Invoice not found' }));
     }
   }
@@ -31,7 +33,7 @@ router.post('/', authMiddleware, asyncHandler(async (req: Request, res: Response
     data: {
       invoiceId,
       orderId,
-      userId: req.user!.userId,
+      userId,
       amount,
       paymentMethod,
       status: 'succeeded', // Auto-succeed for free tier demo
@@ -57,7 +59,8 @@ router.get('/:id', authMiddleware, asyncHandler(async (req: Request, res: Respon
     include: { invoice: true, order: true },
   });
 
-  if (!payment || payment.userId !== req.user!.userId) {
+  const userId = (req.user as any)?.userId || (req.user as any)?.id;
+  if (!payment || payment.userId !== userId) {
     return res.status(404).json(formatResponse(false, undefined, { code: 'NOT_FOUND', message: 'Payment not found' }));
   }
 

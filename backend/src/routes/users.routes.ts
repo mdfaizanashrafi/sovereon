@@ -8,8 +8,9 @@ const prisma = new PrismaClient();
 
 // Get current user profile
 router.get('/me', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
+  const userId = (req.user as any)?.userId || (req.user as any)?.id;
   const user = await prisma.user.findUnique({
-    where: { id: req.user!.userId },
+    where: { id: userId },
     select: {
       id: true,
       email: true,
@@ -27,7 +28,7 @@ router.get('/me', authMiddleware, asyncHandler(async (req: Request, res: Respons
 
 // Get all users (admin only)
 router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
-  if (req.user!.role !== 'admin') {
+  if ((req.user as any)?.role !== 'admin') {
     return res.status(403).json(formatResponse(false, undefined, { code: 'FORBIDDEN', message: 'Admin only' }));
   }
   

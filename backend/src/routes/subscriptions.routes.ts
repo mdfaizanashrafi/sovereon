@@ -8,8 +8,9 @@ const prisma = new PrismaClient();
 
 // Get user's subscriptions
 router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
+  const userId = (req.user as any)?.userId || (req.user as any)?.id;
   const subscriptions = await prisma.subscription.findMany({
-    where: { userId: req.user!.userId },
+    where: { userId },
     include: { service: true },
     orderBy: { createdAt: 'desc' }
   });
@@ -25,9 +26,10 @@ router.post('/', authMiddleware, asyncHandler(async (req: Request, res: Response
     return res.status(404).json(formatResponse(false, undefined, { code: 'NOT_FOUND', message: 'Service not found' }));
   }
 
+  const userId = (req.user as any)?.userId || (req.user as any)?.id;
   const subscription = await prisma.subscription.create({
     data: {
-      userId: req.user!.userId,
+      userId,
       serviceId,
       planName: planName || service.name,
       price: price || service.basePrice,
@@ -44,9 +46,10 @@ router.post('/', authMiddleware, asyncHandler(async (req: Request, res: Response
 
 // Cancel subscription
 router.post('/:id/cancel', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
+  const userId = (req.user as any)?.userId || (req.user as any)?.id;
   const subscription = await prisma.subscription.findUnique({ where: { id: req.params.id } });
   
-  if (!subscription || subscription.userId !== req.user!.userId) {
+  if (!subscription || subscription.userId !== userId) {
     return res.status(404).json(formatResponse(false, undefined, { code: 'NOT_FOUND', message: 'Subscription not found' }));
   }
 

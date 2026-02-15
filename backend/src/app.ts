@@ -1,8 +1,12 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import session from 'express-session';
+import cookieParser from 'cookie-parser';
+import passport from './middleware/passport';
 import 'dotenv/config';
 
 import authRoutes from './routes/auth.routes';
+import oauthRoutes from './routes/oauth.routes';
 import userRoutes from './routes/users.routes';
 import serviceRoutes from './routes/services.routes';
 import orderRoutes from './routes/orders.routes';
@@ -23,6 +27,24 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// Session middleware for Passport
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-session-secret-change-this',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: 'lax',
+  },
+}));
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Request logging middleware (simple)
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -41,6 +63,7 @@ app.get('/api/health', (req: Request, res: Response) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/oauth', oauthRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/orders', orderRoutes);

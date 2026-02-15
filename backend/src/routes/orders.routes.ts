@@ -9,8 +9,9 @@ const prisma = new PrismaClient();
 
 // Get user's orders
 router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
+  const userId = (req.user as any)?.userId || (req.user as any)?.id;
   const orders = await prisma.order.findMany({
-    where: { userId: req.user!.userId },
+    where: { userId },
     include: { service: true },
     orderBy: { createdAt: 'desc' }
   });
@@ -26,10 +27,11 @@ router.post('/', authMiddleware, asyncHandler(async (req: Request, res: Response
     return res.status(404).json(formatResponse(false, undefined, { code: 'NOT_FOUND', message: 'Service not found' }));
   }
 
+  const userId = (req.user as any)?.userId || (req.user as any)?.id;
   const order = await prisma.order.create({
     data: {
       orderNumber: `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      userId: req.user!.userId,
+      userId,
       serviceId,
       quantity,
       unitPrice: service.basePrice,
@@ -49,7 +51,8 @@ router.get('/:id', authMiddleware, asyncHandler(async (req: Request, res: Respon
     include: { service: true, invoice: true },
   });
 
-  if (!order || order.userId !== req.user!.userId) {
+  const userId = (req.user as any)?.userId || (req.user as any)?.id;
+  if (!order || order.userId !== userId) {
     return res.status(404).json(formatResponse(false, undefined, { code: 'NOT_FOUND', message: 'Order not found' }));
   }
 

@@ -8,8 +8,9 @@ const prisma = new PrismaClient();
 
 // Get user's invoices
 router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
+  const userId = (req.user as any)?.userId || (req.user as any)?.id;
   const invoices = await prisma.invoice.findMany({
-    where: { userId: req.user!.userId },
+    where: { userId },
     include: { order: true },
     orderBy: { createdAt: 'desc' }
   });
@@ -18,17 +19,18 @@ router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response)
 
 // Create invoice
 router.post('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
+  const userId = (req.user as any)?.userId || (req.user as any)?.id;
   const { orderId, amount, tax = 0 } = req.body;
   
   const order = await prisma.order.findUnique({ where: { id: orderId } });
-  if (!order || order.userId !== req.user!.userId) {
+  if (!order || order.userId !== userId) {
     return res.status(404).json(formatResponse(false, undefined, { code: 'NOT_FOUND', message: 'Order not found' }));
   }
 
   const invoice = await prisma.invoice.create({
     data: {
       invoiceNumber: `INV-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      userId: req.user!.userId,
+      userId,
       orderId,
       amount,
       tax,
@@ -50,7 +52,8 @@ router.get('/:id', authMiddleware, asyncHandler(async (req: Request, res: Respon
     include: { order: true },
   });
 
-  if (!invoice || invoice.userId !== req.user!.userId) {
+  const userId = (req.user as any)?.userId || (req.user as any)?.id;
+  if (!invoice || invoice.userId !== userId) {
     return res.status(404).json(formatResponse(false, undefined, { code: 'NOT_FOUND', message: 'Invoice not found' }));
   }
 

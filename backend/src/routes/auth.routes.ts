@@ -35,14 +35,16 @@ router.post('/login', asyncHandler(async (req: Request, res: Response) => {
 
 // Get current user
 router.get('/me', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
-  const user = await getUserById(req.user!.userId);
+  const userId = (req.user as any)?.userId || (req.user as any)?.id;
+  const user = await getUserById(userId);
   res.json(formatResponse(true, user));
 }));
 
 // Update profile
 router.put('/me', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
   const { firstName, lastName, companyName, phone } = req.body;
-  const user = await updateUser(req.user!.userId, { firstName, lastName, companyName, phone });
+  const userId = (req.user as any)?.userId || (req.user as any)?.id;
+  const user = await updateUser(userId, { firstName, lastName, companyName, phone });
   res.json(formatResponse(true, user));
 }));
 

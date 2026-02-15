@@ -19,6 +19,9 @@ model User {
   lastName      String?
   companyName   String?
   phone         String?
+  name          String?
+  avatar        String?
+  provider      String?   @default("email") // email, google, github
   role          String    @default("user") // user, admin
   emailVerified Boolean   @default(false)
   status        String    @default("active") // active, inactive, suspended

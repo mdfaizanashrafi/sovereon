@@ -2,14 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import { verifyToken, TokenPayload } from '../utils/jwt';
 import { AppError, ErrorCodes } from '../utils/errors';
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: TokenPayload;
-    }
-  }
-}
-
 export function authMiddleware(req: Request, res: Response, next: NextFunction) {
   const token = req.headers.authorization?.split(' ')[1];
 
@@ -22,7 +14,7 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
     throw new AppError('UNAUTHORIZED', 'Invalid or expired token', 401);
   }
 
-  req.user = payload;
+  (req as any).user = payload;
   next();
 }
 

@@ -20,6 +20,8 @@ interface AuthContextType {
   verifyEmail: (token: string) => Promise<boolean>;
   requestPasswordReset: (email: string) => Promise<boolean>;
   resetPassword: (token: string, newPassword: string) => Promise<boolean>;
+  setToken: (token: string) => void;
+  setUser: (user: any) => void;
   
   // Profile methods
   updateProfile: (updates: Partial<User['profile']>) => Promise<boolean>;
@@ -304,6 +306,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     verifyEmail,
     requestPasswordReset,
     resetPassword,
+    setToken: (token: string) => {
+      localStorage.setItem('token', token);
+    },
+    setUser: (userData: any) => {
+      setUser(userData);
+    },
     updateProfile,
     changePassword,
     getOrders,

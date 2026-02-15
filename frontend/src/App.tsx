@@ -37,6 +37,7 @@ const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
 const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('./pages/auth/VerifyEmailPage'));
+const OAuthCallbackPage = lazy(() => import('./pages/auth/OAuthCallbackPage'));
 
 // Lazy load main pages
 const ServicesPage = lazy(() => import('./pages/ServicesPage').then(m => ({ default: m.ServicesPage })));
@@ -105,6 +106,7 @@ function App() {
           <Route path="/auth/forgot-password" element={<Suspense fallback={<PageLoader />}><ForgotPasswordPage /></Suspense>} />
           <Route path="/auth/reset-password" element={<Suspense fallback={<PageLoader />}><ResetPasswordPage /></Suspense>} />
           <Route path="/auth/verify-email" element={<Suspense fallback={<PageLoader />}><VerifyEmailPage /></Suspense>} />
+          <Route path="/auth/callback" element={<Suspense fallback={<PageLoader />}><OAuthCallbackPage /></Suspense>} />
           
           {/* Portal Routes (with PortalLayout) */}
           <Route path="/portal" element={<PortalLayout />}>
