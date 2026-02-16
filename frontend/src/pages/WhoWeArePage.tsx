@@ -5,7 +5,7 @@
  * 
  * Company information page with:
  * - Company overview and mission
- * - Team members (Md Faizan, Altamash Khan)
+ * - Team members (Md Faizan, Altamash Khan, Md Junaid Ashrafi, etc.)
  * - Company history (established Feb 2026)
  * - Location information
  * 
@@ -130,7 +130,7 @@ export function WhoWeArePage() {
           <h2 className="text-3xl font-bold">Meet the Leaders</h2>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {teamMembers.map((member) => (
             <Card key={member.name} className="ai-card">
               <CardContent className="p-6">

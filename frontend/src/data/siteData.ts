@@ -121,6 +121,13 @@ export const teamMembers = [
     description: 'Drives business growth through strategic sales initiatives and client relationship building.',
     image: '[PLACEHOLDER_TEAM_IMAGE_10]',
   },
+  {
+    name: 'Md Junaid Ashrafi',
+    role: 'Business Analyst',
+    department: 'Business Analysis',
+    description: 'Analyzes business processes and market trends to drive strategic decision-making and operational improvements.',
+    image: '[PLACEHOLDER_TEAM_IMAGE_11]',
+  },
 ];
 
 // ============================================================================
