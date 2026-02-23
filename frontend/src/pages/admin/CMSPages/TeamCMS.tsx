@@ -26,7 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, ImageIcon } from 'lucide-react';
 
 interface TeamMember {
   id: string;
@@ -49,6 +49,7 @@ export default function TeamCMS() {
     role: '',
     department: '',
     description: '',
+    image: '',
     order: 0,
     isActive: true,
   });
@@ -78,6 +79,7 @@ export default function TeamCMS() {
         role: member.role,
         department: member.department,
         description: member.description,
+        image: member.image || '',
         order: member.order,
         isActive: member.isActive,
       });
@@ -88,6 +90,7 @@ export default function TeamCMS() {
         role: '',
         department: '',
         description: '',
+        image: '',
         order: members.length + 1,
         isActive: true,
       });
@@ -148,9 +151,9 @@ export default function TeamCMS() {
           <TableHeader>
             <TableRow>
               <TableHead>Order</TableHead>
+              <TableHead>Image</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead>Department</TableHead>
               <TableHead>Active</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -159,9 +162,17 @@ export default function TeamCMS() {
             {members.map((member) => (
               <TableRow key={member.id}>
                 <TableCell>{member.order}</TableCell>
+                <TableCell>
+                  {member.image ? (
+                    <img src={member.image} alt={member.name} className="w-10 h-10 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                      <ImageIcon className="w-5 h-5 text-gray-400" />
+                    </div>
+                  )}
+                </TableCell>
                 <TableCell className="font-medium">{member.name}</TableCell>
                 <TableCell>{member.role}</TableCell>
-                <TableCell>{member.department}</TableCell>
                 <TableCell>
                   <span className={member.isActive ? 'text-green-600' : 'text-gray-400'}>
                     {member.isActive ? 'Yes' : 'No'}
@@ -250,6 +261,19 @@ export default function TeamCMS() {
                 placeholder="Brief description of responsibilities..."
                 rows={3}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="image">Image URL</Label>
+              <Input
+                id="image"
+                value={formData.image}
+                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                placeholder="https://example.com/image.jpg"
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter a URL for the team member&apos;s photo. Upload images to Cloudinary, Imgur, or your CDN first.
+              </p>
             </div>
 
             <div className="flex items-center gap-2">

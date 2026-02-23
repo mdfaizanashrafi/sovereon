@@ -121,8 +121,8 @@ export function CareersPage() {
         <div className="text-center mt-8">
           <p className="text-muted-foreground">
             Don't see a fit? Send your resume to{' '}
-            <a href="mailto:careers@sovereoninc.com" className="text-primary hover:underline">
-              careers@sovereoninc.com
+            <a href="mailto:partners@sovereon.online" className="text-primary hover:underline">
+              partners@sovereon.online
             </a>
           </p>
         </div>

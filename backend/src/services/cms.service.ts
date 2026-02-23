@@ -526,3 +526,176 @@ export async function deleteFutureQuest(id: string) {
   await prisma.futureQuest.delete({ where: { id } });
   return formatResponse(true, { message: 'Future quest deleted' });
 }
+// ============================================================================
+// CASE STUDIES
+// ============================================================================
+
+export async function getAllCaseStudies() {
+  const caseStudies = await prisma.caseStudy.findMany({
+    orderBy: { order: 'asc' },
+  });
+  return formatResponse(true, caseStudies);
+}
+
+export async function getActiveCaseStudies() {
+  const caseStudies = await prisma.caseStudy.findMany({
+    where: { isActive: true },
+    orderBy: { order: 'asc' },
+  });
+  return formatResponse(true, caseStudies);
+}
+
+export async function getCaseStudyBySlug(slug: string) {
+  const caseStudy = await prisma.caseStudy.findUnique({
+    where: { slug },
+  });
+  if (!caseStudy) {
+    return formatResponse(false, null, 'Case study not found');
+  }
+  return formatResponse(true, caseStudy);
+}
+
+export async function createCaseStudy(data: {
+  title: string;
+  slug: string;
+  client: string;
+  industry: string;
+  description: string;
+  challenge: string;
+  solution: string;
+  results: string;
+  image?: string;
+  technologies: string[];
+  metrics: Array<{ label: string; value: string }>;
+  testimonial?: { quote: string; author: string; role: string };
+  order?: number;
+}) {
+  const caseStudy = await prisma.caseStudy.create({
+    data: {
+      ...data,
+      technologies: JSON.stringify(data.technologies),
+      metrics: JSON.stringify(data.metrics),
+      testimonial: data.testimonial ? JSON.stringify(data.testimonial) : null,
+    },
+  });
+  return formatResponse(true, caseStudy);
+}
+
+export async function updateCaseStudy(
+  id: string,
+  data: Partial<{
+    title: string;
+    slug: string;
+    client: string;
+    industry: string;
+    description: string;
+    challenge: string;
+    solution: string;
+    results: string;
+    image: string;
+    technologies: string[];
+    metrics: Array<{ label: string; value: string }>;
+    testimonial: { quote: string; author: string; role: string } | null;
+    order: number;
+    isActive: boolean;
+  }>
+) {
+  const updateData: any = { ...data };
+  if (data.technologies) updateData.technologies = JSON.stringify(data.technologies);
+  if (data.metrics) updateData.metrics = JSON.stringify(data.metrics);
+  if (data.testimonial !== undefined) updateData.testimonial = data.testimonial ? JSON.stringify(data.testimonial) : null;
+
+  const caseStudy = await prisma.caseStudy.update({
+    where: { id },
+    data: updateData,
+  });
+  return formatResponse(true, caseStudy);
+}
+
+export async function deleteCaseStudy(id: string) {
+  await prisma.caseStudy.delete({ where: { id } });
+  return formatResponse(true, { message: 'Case study deleted' });
+}
+
+// ============================================================================
+// BLOG POSTS
+// ============================================================================
+
+export async function getAllBlogPosts() {
+  const posts = await prisma.blogPost.findMany({
+    orderBy: { order: 'asc' },
+  });
+  return formatResponse(true, posts);
+}
+
+export async function getPublishedBlogPosts() {
+  const posts = await prisma.blogPost.findMany({
+    where: { isPublished: true },
+    orderBy: { publishedAt: 'desc' },
+  });
+  return formatResponse(true, posts);
+}
+
+export async function getBlogPostBySlug(slug: string) {
+  const post = await prisma.blogPost.findUnique({
+    where: { slug },
+  });
+  if (!post) {
+    return formatResponse(false, null, 'Blog post not found');
+  }
+  return formatResponse(true, post);
+}
+
+export async function createBlogPost(data: {
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  image?: string;
+  category: string;
+  tags: string[];
+  author: { name: string; role: string };
+  publishedAt?: Date;
+  order?: number;
+}) {
+  const post = await prisma.blogPost.create({
+    data: {
+      ...data,
+      tags: JSON.stringify(data.tags),
+      author: JSON.stringify(data.author),
+    },
+  });
+  return formatResponse(true, post);
+}
+
+export async function updateBlogPost(
+  id: string,
+  data: Partial<{
+    title: string;
+    slug: string;
+    excerpt: string;
+    content: string;
+    image: string;
+    category: string;
+    tags: string[];
+    author: { name: string; role: string };
+    publishedAt: Date | null;
+    isPublished: boolean;
+    order: number;
+  }>
+) {
+  const updateData: any = { ...data };
+  if (data.tags) updateData.tags = JSON.stringify(data.tags);
+  if (data.author) updateData.author = JSON.stringify(data.author);
+
+  const post = await prisma.blogPost.update({
+    where: { id },
+    data: updateData,
+  });
+  return formatResponse(true, post);
+}
+
+export async function deleteBlogPost(id: string) {
+  await prisma.blogPost.delete({ where: { id } });
+  return formatResponse(true, { message: 'Blog post deleted' });
+}

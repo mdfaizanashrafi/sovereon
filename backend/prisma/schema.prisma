@@ -303,6 +303,47 @@ model CurrentProject {
   @@map("current_projects")
 }
 
+model CaseStudy {
+  id           String   @id @default(cuid())
+  title        String
+  slug         String   @unique
+  client       String
+  industry     String
+  description  String
+  challenge    String
+  solution     String
+  results      String
+  image        String?
+  technologies String   // JSON array
+  metrics      String   // JSON array of {label, value}
+  testimonial  String?  // JSON object with quote, author, role
+  order        Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("case_studies")
+}
+
+model BlogPost {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  excerpt     String
+  content     String
+  image       String?
+  category    String
+  tags        String   // JSON array
+  author      String   // JSON object with name, role
+  publishedAt DateTime?
+  isPublished Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("blog_posts")
+}
+
 model FutureQuest {
   id          String   @id @default(cuid())
   title       String

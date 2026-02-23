@@ -18,6 +18,8 @@ import {
   Menu,
   Brain,
   ChevronRight,
+  FileText,
+  BookOpen,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -27,6 +29,8 @@ const navItems = [
   { path: '/admin/team', label: 'Team Members', icon: Users },
   { path: '/admin/services', label: 'Services', icon: Briefcase },
   { path: '/admin/testimonials', label: 'Testimonials', icon: MessageSquare },
+  { path: '/admin/case-studies', label: 'Case Studies', icon: FileText },
+  { path: '/admin/blog', label: 'Blog Posts', icon: BookOpen },
   { path: '/admin/faqs', label: 'FAQs', icon: HelpCircle },
   { path: '/admin/settings', label: 'Settings', icon: Settings },
 ];

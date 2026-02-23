@@ -236,6 +236,46 @@ class AdminApiClient {
   async deleteFutureQuest(id: string) {
     return this.request(`/api/admin/future-quests/${id}`, 'DELETE');
   }
+
+  // ============================================================================
+  // CASE STUDIES
+  // ============================================================================
+
+  async getCaseStudies() {
+    return this.request('/api/admin/case-studies', 'GET');
+  }
+
+  async createCaseStudy(data: Record<string, unknown>) {
+    return this.request('/api/admin/case-studies', 'POST', data);
+  }
+
+  async updateCaseStudy(id: string, data: Record<string, unknown>) {
+    return this.request(`/api/admin/case-studies/${id}`, 'PUT', data);
+  }
+
+  async deleteCaseStudy(id: string) {
+    return this.request(`/api/admin/case-studies/${id}`, 'DELETE');
+  }
+
+  // ============================================================================
+  // BLOG POSTS
+  // ============================================================================
+
+  async getBlogPosts() {
+    return this.request('/api/admin/blog-posts', 'GET');
+  }
+
+  async createBlogPost(data: Record<string, unknown>) {
+    return this.request('/api/admin/blog-posts', 'POST', data);
+  }
+
+  async updateBlogPost(id: string, data: Record<string, unknown>) {
+    return this.request(`/api/admin/blog-posts/${id}`, 'PUT', data);
+  }
+
+  async deleteBlogPost(id: string) {
+    return this.request(`/api/admin/blog-posts/${id}`, 'DELETE');
+  }
 }
 
 export const adminApi = new AdminApiClient();

@@ -409,4 +409,84 @@ router.delete(
   })
 );
 
+// ============================================================================
+// CASE STUDIES (Protected)
+// ============================================================================
+
+router.get(
+  '/case-studies',
+  adminAuthMiddleware,
+  asyncHandler(async (_req: Request, res: Response) => {
+    const result = await cmsService.getAllCaseStudies();
+    res.json(result);
+  })
+);
+
+router.post(
+  '/case-studies',
+  adminAuthMiddleware,
+  asyncHandler(async (req: Request, res: Response) => {
+    const result = await cmsService.createCaseStudy(req.body);
+    res.status(201).json(result);
+  })
+);
+
+router.put(
+  '/case-studies/:id',
+  adminAuthMiddleware,
+  asyncHandler(async (req: Request, res: Response) => {
+    const result = await cmsService.updateCaseStudy(req.params.id, req.body);
+    res.json(result);
+  })
+);
+
+router.delete(
+  '/case-studies/:id',
+  adminAuthMiddleware,
+  asyncHandler(async (req: Request, res: Response) => {
+    const result = await cmsService.deleteCaseStudy(req.params.id);
+    res.json(result);
+  })
+);
+
+// ============================================================================
+// BLOG POSTS (Protected)
+// ============================================================================
+
+router.get(
+  '/blog-posts',
+  adminAuthMiddleware,
+  asyncHandler(async (_req: Request, res: Response) => {
+    const result = await cmsService.getAllBlogPosts();
+    res.json(result);
+  })
+);
+
+router.post(
+  '/blog-posts',
+  adminAuthMiddleware,
+  asyncHandler(async (req: Request, res: Response) => {
+    const result = await cmsService.createBlogPost(req.body);
+    res.status(201).json(result);
+  })
+);
+
+router.put(
+  '/blog-posts/:id',
+  adminAuthMiddleware,
+  asyncHandler(async (req: Request, res: Response) => {
+    const result = await cmsService.updateBlogPost(req.params.id, req.body);
+    res.json(result);
+  })
+);
+
+router.delete(
+  '/blog-posts/:id',
+  adminAuthMiddleware,
+  asyncHandler(async (req: Request, res: Response) => {
+    const result = await cmsService.deleteBlogPost(req.params.id);
+    res.json(result);
+  })
+);
+
 export default router;

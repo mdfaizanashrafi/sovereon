@@ -176,6 +176,34 @@ export default function SettingsCMS() {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Map & Location</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label>Google Maps Embed Code</Label>
+              <textarea
+                value={getSettingValue('googleMapsEmbed')}
+                onChange={(e) => updateSetting('googleMapsEmbed', e.target.value)}
+                placeholder='<iframe src="https://www.google.com/maps/embed..." ...></iframe>'
+                className="w-full min-h-[120px] px-3 py-2 rounded-md border border-input bg-transparent text-sm resize-y focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <p className="text-xs text-muted-foreground">
+                Paste the Google Maps embed iframe code here. Get it from Google Maps → Share → Embed a map.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label>Map Preview URL (Optional)</Label>
+              <Input 
+                value={getSettingValue('mapPreviewUrl')} 
+                onChange={(e) => updateSetting('mapPreviewUrl', e.target.value)}
+                placeholder="https://maps.google.com/?q=Your+Address"
+              />
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

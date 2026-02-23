@@ -86,6 +86,8 @@ const ServicesCMS = lazy(() => import('./pages/admin/CMSPages/ServicesCMS'));
 const TestimonialsCMS = lazy(() => import('./pages/admin/CMSPages/TestimonialsCMS'));
 const FAQCMS = lazy(() => import('./pages/admin/CMSPages/FAQCMS'));
 const SettingsCMS = lazy(() => import('./pages/admin/CMSPages/SettingsCMS'));
+const CaseStudiesCMS = lazy(() => import('./pages/admin/CMSPages/CaseStudiesCMS'));
+const BlogCMS = lazy(() => import('./pages/admin/CMSPages/BlogCMS'));
 
 // Loading component for suspended routes
 const PageLoader = () => (
@@ -120,6 +122,8 @@ function App() {
           <Route path="team" element={<Suspense fallback={<PageLoader />}><TeamCMS /></Suspense>} />
           <Route path="services" element={<Suspense fallback={<PageLoader />}><ServicesCMS /></Suspense>} />
           <Route path="testimonials" element={<Suspense fallback={<PageLoader />}><TestimonialsCMS /></Suspense>} />
+          <Route path="case-studies" element={<Suspense fallback={<PageLoader />}><CaseStudiesCMS /></Suspense>} />
+          <Route path="blog" element={<Suspense fallback={<PageLoader />}><BlogCMS /></Suspense>} />
           <Route path="faqs" element={<Suspense fallback={<PageLoader />}><FAQCMS /></Suspense>} />
           <Route path="settings" element={<Suspense fallback={<PageLoader />}><SettingsCMS /></Suspense>} />
         </Route>

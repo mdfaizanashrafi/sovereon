@@ -25,7 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, ImageIcon } from 'lucide-react';
 
 interface Testimonial {
   id: string;
@@ -34,6 +34,7 @@ interface Testimonial {
   role: string;
   content: string;
   rating: number;
+  avatar: string | null;
   beforeMetric: string | null;
   afterMetric: string | null;
   order: number;
@@ -51,6 +52,7 @@ export default function TestimonialsCMS() {
     role: '',
     content: '',
     rating: 5,
+    avatar: '',
     beforeMetric: '',
     afterMetric: '',
     order: 0,
@@ -83,6 +85,7 @@ export default function TestimonialsCMS() {
         role: item.role,
         content: item.content,
         rating: item.rating,
+        avatar: item.avatar || '',
         beforeMetric: item.beforeMetric || '',
         afterMetric: item.afterMetric || '',
         order: item.order,
@@ -96,6 +99,7 @@ export default function TestimonialsCMS() {
         role: '',
         content: '',
         rating: 5,
+        avatar: '',
         beforeMetric: '',
         afterMetric: '',
         order: testimonials.length + 1,
@@ -163,6 +167,7 @@ export default function TestimonialsCMS() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Avatar</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Company</TableHead>
               <TableHead>Rating</TableHead>
@@ -173,6 +178,15 @@ export default function TestimonialsCMS() {
           <TableBody>
             {testimonials.map((item) => (
               <TableRow key={item.id}>
+                <TableCell>
+                  {item.avatar ? (
+                    <img src={item.avatar} alt={item.name} className="w-10 h-10 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                      <ImageIcon className="w-5 h-5 text-gray-400" />
+                    </div>
+                  )}
+                </TableCell>
                 <TableCell className="font-medium">{item.name}</TableCell>
                 <TableCell>{item.company}</TableCell>
                 <TableCell>{'★'.repeat(item.rating)}</TableCell>
@@ -221,6 +235,18 @@ export default function TestimonialsCMS() {
             <div className="space-y-2">
               <Label>Content</Label>
               <Textarea value={formData.content} onChange={(e) => setFormData({ ...formData, content: e.target.value })} rows={3} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Avatar URL</Label>
+              <Input 
+                value={formData.avatar} 
+                onChange={(e) => setFormData({ ...formData, avatar: e.target.value })} 
+                placeholder="https://example.com/avatar.jpg"
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter a URL for the client&apos;s avatar. Upload images to Cloudinary, Imgur, or your CDN first.
+              </p>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

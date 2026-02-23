@@ -106,4 +106,44 @@ router.get(
   })
 );
 
+// ============================================================================
+// CASE STUDIES
+// ============================================================================
+
+router.get(
+  '/case-studies',
+  asyncHandler(async (_req: Request, res: Response) => {
+    const result = await cmsService.getActiveCaseStudies();
+    res.json(result);
+  })
+);
+
+router.get(
+  '/case-studies/:slug',
+  asyncHandler(async (req: Request, res: Response) => {
+    const result = await cmsService.getCaseStudyBySlug(req.params.slug);
+    res.json(result);
+  })
+);
+
+// ============================================================================
+// BLOG POSTS
+// ============================================================================
+
+router.get(
+  '/blog-posts',
+  asyncHandler(async (_req: Request, res: Response) => {
+    const result = await cmsService.getPublishedBlogPosts();
+    res.json(result);
+  })
+);
+
+router.get(
+  '/blog-posts/:slug',
+  asyncHandler(async (req: Request, res: Response) => {
+    const result = await cmsService.getBlogPostBySlug(req.params.slug);
+    res.json(result);
+  })
+);
+
 export default router;
