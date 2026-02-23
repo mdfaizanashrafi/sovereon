@@ -265,13 +265,21 @@ export function Footer() {
               </span>
             </p>
 
-            {/* Legal Links + Back to Top */}
+            {/* Legal Links + Admin + Back to Top */}
             <div className="flex items-center gap-4">
               {footerLinks.legal.map((link) => (
                 <FooterLink key={link.href} href={link.href}>
                   {link.label}
                 </FooterLink>
               ))}
+              <span className="text-border">|</span>
+              <Link
+                to="/admin/login"
+                className="text-sm text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                title="Admin Login"
+              >
+                Admin
+              </Link>
               <Button
                 variant="ghost"
                 size="icon"
