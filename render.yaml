@@ -13,7 +13,9 @@ services:
       - key: PORT
         value: 5000
       - key: DATABASE_URL
-        value: file:/opt/render/project/src/backend/data/app.db
+        fromDatabase:
+          name: sovereon-db
+          property: connectionString
       # Admin Session Secret (Required for admin panel login)
       - key: SESSION_SECRET
         generateValue: true
@@ -34,7 +36,9 @@ services:
       # Logging
       - key: LOG_LEVEL
         value: info
-    disk:
-      name: sovereon-data
-      mountPath: /opt/render/project/src/backend/data
-      sizeGB: 1
+
+databases:
+  - name: sovereon-db
+    databaseName: sovereon
+    plan: standard
+    region: oregon
