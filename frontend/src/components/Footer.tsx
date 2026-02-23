@@ -162,17 +162,17 @@ export function Footer() {
               <div className="flex items-start gap-2 text-sm">
                 <MapPin className="w-4 h-4 text-primary mt-0.5" />
                 <span className="text-muted-foreground">
-                  Habibpur, Bhagalpur,<br />
+                  Bhagalpur,<br />
                   Bihar - 812002, India
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Mail className="w-4 h-4 text-primary" />
                 <a 
-                  href="mailto:contact@sovereoninc.com" 
+                  href="mailto:sovereon@sovereon.online" 
                   className="hover:text-primary transition-colors"
                 >
-                  contact@sovereoninc.com
+                  sovereon@sovereon.online
                 </a>
               </div>
             </div>

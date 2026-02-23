@@ -7,7 +7,7 @@ generator client {
 
 datasource db {
   // Use PostgreSQL for production (Render), SQLite for development
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -183,4 +183,171 @@ model AuditLog {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@map("audit_logs")
+}
+
+// ============================================================================
+// CMS CONTENT MODELS
+// ============================================================================
+
+model TeamMember {
+  id          String   @id @default(cuid())
+  name        String
+  role        String
+  department  String
+  description String
+  image       String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("team_members")
+}
+
+model ServiceCategory {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  title       String
+  description String
+  order       Int       @default(0)
+  isActive    Boolean   @default(true)
+  services    ServiceCMS[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("service_categories")
+}
+
+model ServiceCMS {
+  id               String          @id @default(cuid())
+  slug             String          @unique
+  title            String
+  categoryId       String
+  category         ServiceCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  shortDescription String
+  fullDescription  String
+  features         String          // JSON array
+  benefits         String          // JSON array
+  strategy         String          // JSON array of {step, title, description}
+  isActive         Boolean         @default(true)
+  order            Int             @default(0)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@map("services_cms")
+}
+
+model Testimonial {
+  id           String   @id @default(cuid())
+  name         String
+  company      String
+  role         String
+  content      String
+  rating       Int      @default(5)
+  avatar       String?
+  beforeMetric String?
+  afterMetric  String?
+  isActive     Boolean  @default(true)
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("testimonials")
+}
+
+model FAQ {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  category  String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("faqs")
+}
+
+model PageContent {
+  id        String   @id @default(cuid())
+  page      String   // 'home', 'about', 'footer', 'navbar', etc.
+  section   String   // 'hero', 'whyChooseUs', 'seo', etc.
+  content   String   // JSON object
+  updatedAt DateTime @updatedAt
+
+  @@unique([page, section])
+  @@map("page_contents")
+}
+
+model GlobalSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("global_settings")
+}
+
+model CurrentProject {
+  id           String   @id @default(cuid())
+  title        String
+  description  String
+  progress     Int      @default(0)
+  image        String?
+  technologies String   // JSON array
+  order        Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("current_projects")
+}
+
+model FutureQuest {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  timeline    String
+  icon        String
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("future_quests")
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String   // Hashed with bcrypt
+  lastLogin DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("admin_users")
+}
+
+// ============================================================================
+// CONTACT FORM SUBMISSIONS
+// ============================================================================
+
+model ContactSubmission {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  company     String?  // For contact page
+  service     String?  // Service interest
+  message     String
+  formType    String   @default("contact") // 'contact' or 'consultation'
+  ipAddress   String?  // For spam tracking
+  userAgent   String?  // For spam tracking
+  isSpam      Boolean  @default(false)    // Honeypot detection
+  adminNotified Boolean @default(false)   // Email sent to admin
+  autoReplied Boolean  @default(false)    // Auto-reply sent
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("contact_submissions")
 }

@@ -3,20 +3,93 @@
  * COMMUNICATION & MESSAGING SERVICES PAGE
  * ============================================================================
  * 
- * Service category page for Communication & Messaging services.
- * 
- * @page
+ * Service category page - loads data dynamically from CMS
  */
 
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle } from 'lucide-react';
-import { serviceCategories } from '@/data/siteData';
+import { cmsApi } from '@/services/cmsApi';
+import { Skeleton } from '@/components/ui/skeleton';
+
+interface Service {
+  id: string;
+  slug: string;
+  title: string;
+  fullDescription: string;
+  features: string;
+  order: number;
+}
+
+interface ServiceCategory {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  services: Service[];
+}
 
 export function CommunicationMessagingPage() {
-  const category = serviceCategories.find(c => c.id === 'communication-messaging')!;
+  const [category, setCategory] = useState<ServiceCategory | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCategory = async () => {
+      try {
+        const response = await cmsApi.getServiceCategories();
+        if (response.success) {
+          const categories = response.data as ServiceCategory[];
+          const found = categories.find(c => c.slug === 'communication-messaging');
+          if (found) {
+            setCategory(found);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load category:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCategory();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="pt-24 pb-16">
+        <div className="container mx-auto px-4">
+          <Skeleton className="h-8 w-64 mb-4" />
+          <Skeleton className="h-4 w-full max-w-xl mb-8" />
+          <div className="grid md:grid-cols-2 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-64" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!category) {
+    return (
+      <div className="pt-24 pb-16">
+        <div className="container mx-auto px-4">
+          <h1 className="text-2xl font-bold">Category not found</h1>
+        </div>
+      </div>
+    );
+  }
+
+  const getFeatures = (featuresJson: string) => {
+    try {
+      return JSON.parse(featuresJson).slice(0, 3);
+    } catch {
+      return [];
+    }
+  };
 
   return (
     <div className="pt-24 pb-16">
@@ -37,7 +110,7 @@ export function CommunicationMessagingPage() {
 
         {/* Services Grid */}
         <div className="grid md:grid-cols-2 gap-6">
-          {category.services.map((service, index) => (
+          {category.services?.map((service, index) => (
             <Card
               key={service.id}
               className="ai-card group animate-fade-in-up"
@@ -52,7 +125,7 @@ export function CommunicationMessagingPage() {
                 <div className="mb-4">
                   <h3 className="text-sm font-medium mb-2">Key Features:</h3>
                   <ul className="space-y-1">
-                    {service.features.slice(0, 3).map((feature) => (
+                    {getFeatures(service.features).map((feature: string) => (
                       <li key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
                         <CheckCircle className="w-3 h-3 text-primary" />
                         {feature}
@@ -62,7 +135,7 @@ export function CommunicationMessagingPage() {
                 </div>
 
                 <Button asChild variant="outline" className="w-full">
-                  <Link to={service.href}>
+                  <Link to={`/services/${service.slug}`}>
                     Learn More
                     <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Link>

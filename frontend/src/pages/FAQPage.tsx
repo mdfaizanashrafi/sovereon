@@ -3,16 +3,10 @@
  * FAQ PAGE
  * ============================================================================
  * 
- * Features:
- * - Timeline information
- * - Refund policy
- * - Common doubts/questions
- * - Payment methods
- * - Organized by category
- * 
- * @page
+ * Displays frequently asked questions dynamically from CMS
  */
 
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -21,118 +15,95 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { Clock, RefreshCw, HelpCircle, CreditCard, MessageCircle } from 'lucide-react';
-import { faqItems } from '@/data/siteData';
+import { cmsApi } from '@/services/cmsApi';
+import { Skeleton } from '@/components/ui/skeleton';
 
-const categories = [
-  { id: 'Timeline', icon: Clock, label: 'Project Timeline' },
-  { id: 'Refund Policy', icon: RefreshCw, label: 'Refund Policy' },
-  { id: 'Payments', icon: CreditCard, label: 'Payment Methods' },
-  { id: 'AI Technology', icon: MessageCircle, label: 'AI & Technology' },
-  { id: 'Support', icon: HelpCircle, label: 'Support' },
-  { id: 'General', icon: HelpCircle, label: 'General' },
-  { id: 'Security', icon: HelpCircle, label: 'Security' },
-];
+interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+  category: string;
+}
 
 export function FAQPage() {
-  const groupedFAQs = faqItems.reduce((acc, item) => {
-    if (!acc[item.category]) acc[item.category] = [];
-    acc[item.category].push(item);
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadFAQs = async () => {
+      try {
+        const response = await cmsApi.getFAQs();
+        if (response.success) {
+          setFaqs((response.data as FAQ[]) || []);
+        }
+      } catch (error) {
+        console.error('Failed to load FAQs:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadFAQs();
+  }, []);
+
+  // Group FAQs by category
+  const groupedFAQs = faqs.reduce((acc, faq) => {
+    if (!acc[faq.category]) {
+      acc[faq.category] = [];
+    }
+    acc[faq.category].push(faq);
     return acc;
-  }, {} as Record<string, typeof faqItems>);
+  }, {} as Record<string, FAQ[]>);
+
+  if (isLoading) {
+    return (
+      <div className="pt-24 pb-16">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <Skeleton className="h-8 w-64 mx-auto mb-4" />
+          <Skeleton className="h-4 w-full max-w-xl mx-auto mb-8" />
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-16 mb-2" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="pt-24 pb-16">
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-        <div className="max-w-3xl mx-auto text-center">
-          <Badge className="badge-ai mb-4">Help Center</Badge>
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <Badge className="badge-ai mb-4">FAQ</Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
             Frequently Asked <span className="text-gradient">Questions</span>
           </h1>
-          <p className="text-lg text-muted-foreground">
-            Find answers to common questions about our services, 
-            processes, and policies.
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Find answers to common questions about our services and process
           </p>
         </div>
-      </section>
 
-      {/* Quick Links */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {categories.map((cat) => (
-            <a
-              key={cat.id}
-              href={`#${cat.id.toLowerCase().replace(' ', '-')}`}
-              className="ai-card p-4 text-center hover:border-primary/50 transition-colors"
-            >
-              <cat.icon className="w-6 h-6 mx-auto mb-2 text-primary" />
-              <span className="text-sm font-medium">{cat.label}</span>
-            </a>
+        {/* FAQ Content */}
+        <div className="max-w-3xl mx-auto space-y-8">
+          {Object.entries(groupedFAQs).map(([category, categoryFaqs]) => (
+            <Card key={category} className="ai-card">
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold mb-4">{category}</h2>
+                <Accordion type="single" collapsible className="w-full">
+                  {categoryFaqs.map((faq) => (
+                    <AccordionItem key={faq.id} value={faq.id}>
+                      <AccordionTrigger className="text-left">
+                        {faq.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-muted-foreground">
+                        {faq.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </CardContent>
+            </Card>
           ))}
-        </div>
-      </section>
-
-      {/* FAQ Accordion */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-8">
-            {Object.entries(groupedFAQs).map(([category, items]) => (
-              <Card key={category} className="ai-card" id={category.toLowerCase().replace(' ', '-')}>
-                <CardContent className="p-6">
-                  <h2 className="text-xl font-semibold mb-4">{category}</h2>
-                  <Accordion type="single" collapsible className="w-full">
-                    {items.map((item) => (
-                      <AccordionItem key={item.id} value={item.id}>
-                        <AccordionTrigger className="text-left">
-                          {item.question}
-                        </AccordionTrigger>
-                        <AccordionContent className="text-muted-foreground">
-                          {item.answer}
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <Card className="ai-card bg-gradient-to-br from-primary/10 to-accent/10">
-              <CardContent className="p-6">
-                <h3 className="font-semibold mb-4">Still Have Questions?</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Can't find what you're looking for? Reach out to our team 
-                  and we'll get back to you within 24 hours.
-                </p>
-                <a href="/contact-us" className="btn-ai block text-center py-2 rounded-lg font-medium">
-                  Contact Us
-                </a>
-              </CardContent>
-            </Card>
-
-            <Card className="ai-card">
-              <CardContent className="p-6">
-                <h3 className="font-semibold mb-4">Quick Facts</h3>
-                <ul className="space-y-3 text-sm">
-                  <li className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-primary" />
-                    <span className="text-muted-foreground">Avg. response: &lt;2 hours</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <RefreshCw className="w-4 h-4 text-primary" />
-                    <span className="text-muted-foreground">14-day refund policy</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CreditCard className="w-4 h-4 text-primary" />
-                    <span className="text-muted-foreground">Multiple payment options</span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </section>
     </div>

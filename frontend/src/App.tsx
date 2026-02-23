@@ -11,33 +11,18 @@
  * - Contact and FAQ pages
  * - Pricing, Case Studies, Blog
  * - Footer pages (Privacy, Terms, Careers, Sitemap)
+ * - Admin panel
  * 
  * @author Sovereon Inc. Development Team
  * @since February 2026
- * @version 1.0.0
+ * @version 3.0.0
  */
 
 import { lazy, Suspense } from 'react';
-import { HashRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AdminProvider } from './contexts/AdminContext';
 import { Layout } from './components/Layout';
-import PortalLayout from './components/portal/PortalLayout';
 import { HomePage } from './pages/HomePage';
-
-// Lazy load portal pages for better code splitting
-const DashboardPage = lazy(() => import('./pages/portal/DashboardPage'));
-const OrdersPage = lazy(() => import('./pages/portal/OrdersPage'));
-const SubscriptionsPage = lazy(() => import('./pages/portal/SubscriptionsPage'));
-const InvoicesPage = lazy(() => import('./pages/portal/InvoicesPage'));
-const ProfilePage = lazy(() => import('./pages/portal/ProfilePage'));
-
-// Lazy load auth pages
-const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
-const RegisterPage = lazy(() => import('./pages/auth/RegisterPage'));
-const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('./pages/auth/ResetPasswordPage'));
-const VerifyEmailPage = lazy(() => import('./pages/auth/VerifyEmailPage'));
-const OAuthCallbackPage = lazy(() => import('./pages/auth/OAuthCallbackPage'));
 
 // Lazy load main pages
 const ServicesPage = lazy(() => import('./pages/ServicesPage').then(m => ({ default: m.ServicesPage })));
@@ -85,6 +70,16 @@ const OnlinePRReputationPage = lazy(() => import('./pages/services/OnlinePRReput
 const AdShootPage = lazy(() => import('./pages/services/AdShootPage').then(m => ({ default: m.AdShootPage })));
 const PhotoShootPage = lazy(() => import('./pages/services/PhotoShootPage').then(m => ({ default: m.PhotoShootPage })));
 
+// Lazy load admin pages
+const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage'));
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const TeamCMS = lazy(() => import('./pages/admin/CMSPages/TeamCMS'));
+const ServicesCMS = lazy(() => import('./pages/admin/CMSPages/ServicesCMS'));
+const TestimonialsCMS = lazy(() => import('./pages/admin/CMSPages/TestimonialsCMS'));
+const FAQCMS = lazy(() => import('./pages/admin/CMSPages/FAQCMS'));
+const SettingsCMS = lazy(() => import('./pages/admin/CMSPages/SettingsCMS'));
+
 // Loading component for suspended routes
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">
@@ -98,88 +93,92 @@ const PageLoader = () => (
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <Routes>
-          {/* Auth Routes (no Layout) */}
-          <Route path="/auth/login" element={<Suspense fallback={<PageLoader />}><LoginPage /></Suspense>} />
-          <Route path="/auth/register" element={<Suspense fallback={<PageLoader />}><RegisterPage /></Suspense>} />
-          <Route path="/auth/forgot-password" element={<Suspense fallback={<PageLoader />}><ForgotPasswordPage /></Suspense>} />
-          <Route path="/auth/reset-password" element={<Suspense fallback={<PageLoader />}><ResetPasswordPage /></Suspense>} />
-          <Route path="/auth/verify-email" element={<Suspense fallback={<PageLoader />}><VerifyEmailPage /></Suspense>} />
-          <Route path="/auth/callback" element={<Suspense fallback={<PageLoader />}><OAuthCallbackPage /></Suspense>} />
+      <Routes>
+        {/* Admin Routes (with AdminProvider) */}
+        <Route path="/admin/login" element={
+          <AdminProvider>
+            <Suspense fallback={<PageLoader />}>
+              <AdminLoginPage />
+            </Suspense>
+          </AdminProvider>
+        } />
+        <Route path="/admin" element={
+          <AdminProvider>
+            <Suspense fallback={<PageLoader />}>
+              <AdminLayout />
+            </Suspense>
+          </AdminProvider>
+        }>
+          <Route index element={<Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>} />
+          <Route path="team" element={<Suspense fallback={<PageLoader />}><TeamCMS /></Suspense>} />
+          <Route path="services" element={<Suspense fallback={<PageLoader />}><ServicesCMS /></Suspense>} />
+          <Route path="testimonials" element={<Suspense fallback={<PageLoader />}><TestimonialsCMS /></Suspense>} />
+          <Route path="faqs" element={<Suspense fallback={<PageLoader />}><FAQCMS /></Suspense>} />
+          <Route path="settings" element={<Suspense fallback={<PageLoader />}><SettingsCMS /></Suspense>} />
+        </Route>
+
+        {/* Main Website Routes (with Layout) */}
+        <Route path="/" element={<Layout />}>
+          {/* Main Pages */}
+          <Route index element={<HomePage />} />
+          <Route path="services" element={<Suspense fallback={<PageLoader />}><ServicesPage /></Suspense>} />
+          <Route path="who-we-are" element={<Suspense fallback={<PageLoader />}><WhoWeArePage /></Suspense>} />
+          <Route path="why-choose-us" element={<Suspense fallback={<PageLoader />}><WhyChooseUsPage /></Suspense>} />
+          <Route path="testimonials" element={<Suspense fallback={<PageLoader />}><TestimonialsPage /></Suspense>} />
+          <Route path="contact-us" element={<Suspense fallback={<PageLoader />}><ContactPage /></Suspense>} />
+          <Route path="faq" element={<Suspense fallback={<PageLoader />}><FAQPage /></Suspense>} />
+          <Route path="pricing" element={<Suspense fallback={<PageLoader />}><PricingPage /></Suspense>} />
+          <Route path="case-studies" element={<Suspense fallback={<PageLoader />}><CaseStudiesPage /></Suspense>} />
+          <Route path="blog" element={<Suspense fallback={<PageLoader />}><BlogPage /></Suspense>} />
           
-          {/* Portal Routes (with PortalLayout) */}
-          <Route path="/portal" element={<PortalLayout />}>
-            <Route path="dashboard" element={<Suspense fallback={<PageLoader />}><DashboardPage /></Suspense>} />
-            <Route path="orders" element={<Suspense fallback={<PageLoader />}><OrdersPage /></Suspense>} />
-            <Route path="subscriptions" element={<Suspense fallback={<PageLoader />}><SubscriptionsPage /></Suspense>} />
-            <Route path="invoices" element={<Suspense fallback={<PageLoader />}><InvoicesPage /></Suspense>} />
-            <Route path="profile" element={<Suspense fallback={<PageLoader />}><ProfilePage /></Suspense>} />
-          </Route>
+          {/* Service Category Pages */}
+          <Route path="services/communication-messaging" element={<Suspense fallback={<PageLoader />}><CommunicationMessagingPage /></Suspense>} />
+          <Route path="services/software-app-development" element={<Suspense fallback={<PageLoader />}><SoftwareAppDevelopmentPage /></Suspense>} />
+          <Route path="services/maintenance-support" element={<Suspense fallback={<PageLoader />}><MaintenanceSupportPage /></Suspense>} />
+          <Route path="services/cloud-it-solutions" element={<Suspense fallback={<PageLoader />}><CloudITSolutionsPage /></Suspense>} />
+          <Route path="services/digital-marketing-seo" element={<Suspense fallback={<PageLoader />}><DigitalMarketingSEOPage /></Suspense>} />
+          <Route path="services/content-media-production" element={<Suspense fallback={<PageLoader />}><ContentMediaProductionPage /></Suspense>} />
           
-          {/* Main Website Routes (with Layout) */}
-          <Route path="/" element={<Layout />}>
-            {/* Main Pages */}
-            <Route index element={<HomePage />} />
-            <Route path="services" element={<Suspense fallback={<PageLoader />}><ServicesPage /></Suspense>} />
-            <Route path="who-we-are" element={<Suspense fallback={<PageLoader />}><WhoWeArePage /></Suspense>} />
-            <Route path="why-choose-us" element={<Suspense fallback={<PageLoader />}><WhyChooseUsPage /></Suspense>} />
-            <Route path="testimonials" element={<Suspense fallback={<PageLoader />}><TestimonialsPage /></Suspense>} />
-            <Route path="contact-us" element={<Suspense fallback={<PageLoader />}><ContactPage /></Suspense>} />
-            <Route path="faq" element={<Suspense fallback={<PageLoader />}><FAQPage /></Suspense>} />
-            <Route path="pricing" element={<Suspense fallback={<PageLoader />}><PricingPage /></Suspense>} />
-            <Route path="case-studies" element={<Suspense fallback={<PageLoader />}><CaseStudiesPage /></Suspense>} />
-            <Route path="blog" element={<Suspense fallback={<PageLoader />}><BlogPage /></Suspense>} />
-            
-            {/* Service Category Pages */}
-            <Route path="services/communication-messaging" element={<Suspense fallback={<PageLoader />}><CommunicationMessagingPage /></Suspense>} />
-            <Route path="services/software-app-development" element={<Suspense fallback={<PageLoader />}><SoftwareAppDevelopmentPage /></Suspense>} />
-            <Route path="services/maintenance-support" element={<Suspense fallback={<PageLoader />}><MaintenanceSupportPage /></Suspense>} />
-            <Route path="services/cloud-it-solutions" element={<Suspense fallback={<PageLoader />}><CloudITSolutionsPage /></Suspense>} />
-            <Route path="services/digital-marketing-seo" element={<Suspense fallback={<PageLoader />}><DigitalMarketingSEOPage /></Suspense>} />
-            <Route path="services/content-media-production" element={<Suspense fallback={<PageLoader />}><ContentMediaProductionPage /></Suspense>} />
-            
-            {/* Communication & Messaging Subpages */}
-            <Route path="services/broadcast-sms" element={<Suspense fallback={<PageLoader />}><BroadcastSMSPage /></Suspense>} />
-            <Route path="services/bulk-sms" element={<Suspense fallback={<PageLoader />}><BulkSMSPage /></Suspense>} />
-            <Route path="services/ivr-calling" element={<Suspense fallback={<PageLoader />}><IVRCallingPage /></Suspense>} />
-            <Route path="services/email-sms-marketing" element={<Suspense fallback={<PageLoader />}><EmailSMSMarketingPage /></Suspense>} />
-            
-            {/* Software & App Development Subpages */}
-            <Route path="services/website-design-development" element={<Suspense fallback={<PageLoader />}><WebsiteDesignDevelopmentPage /></Suspense>} />
-            <Route path="services/mobile-app-development" element={<Suspense fallback={<PageLoader />}><MobileAppDevelopmentPage /></Suspense>} />
-            <Route path="services/custom-software-solutions" element={<Suspense fallback={<PageLoader />}><CustomSoftwareSolutionsPage /></Suspense>} />
-            <Route path="services/ui-ux-design" element={<Suspense fallback={<PageLoader />}><UIUXDesignPage /></Suspense>} />
-            
-            {/* Maintenance & Support Subpages */}
-            <Route path="services/web-app-maintenance" element={<Suspense fallback={<PageLoader />}><WebAppMaintenancePage /></Suspense>} />
-            
-            {/* Cloud & IT Solutions Subpages */}
-            <Route path="services/cloud-solutions-hosting" element={<Suspense fallback={<PageLoader />}><CloudSolutionsHostingPage /></Suspense>} />
-            <Route path="services/it-consulting-transformation" element={<Suspense fallback={<PageLoader />}><ITConsultingTransformationPage /></Suspense>} />
-            
-            {/* Digital Marketing & SEO Subpages */}
-            <Route path="services/seo" element={<Suspense fallback={<PageLoader />}><SEOPage /></Suspense>} />
-            <Route path="services/social-media-marketing" element={<Suspense fallback={<PageLoader />}><SocialMediaMarketingPage /></Suspense>} />
-            <Route path="services/paid-ads" element={<Suspense fallback={<PageLoader />}><PaidAdsPage /></Suspense>} />
-            <Route path="services/influencer-marketing" element={<Suspense fallback={<PageLoader />}><InfluencerMarketingPage /></Suspense>} />
-            <Route path="services/lead-generation" element={<Suspense fallback={<PageLoader />}><LeadGenerationPage /></Suspense>} />
-            
-            {/* Content & Media Production Subpages */}
-            <Route path="services/podcast-production-only" element={<Suspense fallback={<PageLoader />}><PodcastProductionOnlyPage /></Suspense>} />
-            <Route path="services/podcast-production-promotion" element={<Suspense fallback={<PageLoader />}><PodcastProductionPromotionPage /></Suspense>} />
-            <Route path="services/online-pr-reputation" element={<Suspense fallback={<PageLoader />}><OnlinePRReputationPage /></Suspense>} />
-            <Route path="services/ad-shoot" element={<Suspense fallback={<PageLoader />}><AdShootPage /></Suspense>} />
-            <Route path="services/photo-shoot" element={<Suspense fallback={<PageLoader />}><PhotoShootPage /></Suspense>} />
-            
-            {/* Footer Pages */}
-            <Route path="privacy" element={<Suspense fallback={<PageLoader />}><PrivacyPage /></Suspense>} />
-            <Route path="terms" element={<Suspense fallback={<PageLoader />}><TermsPage /></Suspense>} />
-            <Route path="careers" element={<Suspense fallback={<PageLoader />}><CareersPage /></Suspense>} />
-            <Route path="sitemap" element={<Suspense fallback={<PageLoader />}><SitemapPage /></Suspense>} />
-          </Route>
-        </Routes>
-      </AuthProvider>
+          {/* Communication & Messaging Subpages */}
+          <Route path="services/broadcast-sms" element={<Suspense fallback={<PageLoader />}><BroadcastSMSPage /></Suspense>} />
+          <Route path="services/bulk-sms" element={<Suspense fallback={<PageLoader />}><BulkSMSPage /></Suspense>} />
+          <Route path="services/ivr-calling" element={<Suspense fallback={<PageLoader />}><IVRCallingPage /></Suspense>} />
+          <Route path="services/email-sms-marketing" element={<Suspense fallback={<PageLoader />}><EmailSMSMarketingPage /></Suspense>} />
+          
+          {/* Software & App Development Subpages */}
+          <Route path="services/website-design-development" element={<Suspense fallback={<PageLoader />}><WebsiteDesignDevelopmentPage /></Suspense>} />
+          <Route path="services/mobile-app-development" element={<Suspense fallback={<PageLoader />}><MobileAppDevelopmentPage /></Suspense>} />
+          <Route path="services/custom-software-solutions" element={<Suspense fallback={<PageLoader />}><CustomSoftwareSolutionsPage /></Suspense>} />
+          <Route path="services/ui-ux-design" element={<Suspense fallback={<PageLoader />}><UIUXDesignPage /></Suspense>} />
+          
+          {/* Maintenance & Support Subpages */}
+          <Route path="services/web-app-maintenance" element={<Suspense fallback={<PageLoader />}><WebAppMaintenancePage /></Suspense>} />
+          
+          {/* Cloud & IT Solutions Subpages */}
+          <Route path="services/cloud-solutions-hosting" element={<Suspense fallback={<PageLoader />}><CloudSolutionsHostingPage /></Suspense>} />
+          <Route path="services/it-consulting-transformation" element={<Suspense fallback={<PageLoader />}><ITConsultingTransformationPage /></Suspense>} />
+          
+          {/* Digital Marketing & SEO Subpages */}
+          <Route path="services/seo" element={<Suspense fallback={<PageLoader />}><SEOPage /></Suspense>} />
+          <Route path="services/social-media-marketing" element={<Suspense fallback={<PageLoader />}><SocialMediaMarketingPage /></Suspense>} />
+          <Route path="services/paid-ads" element={<Suspense fallback={<PageLoader />}><PaidAdsPage /></Suspense>} />
+          <Route path="services/influencer-marketing" element={<Suspense fallback={<PageLoader />}><InfluencerMarketingPage /></Suspense>} />
+          <Route path="services/lead-generation" element={<Suspense fallback={<PageLoader />}><LeadGenerationPage /></Suspense>} />
+          
+          {/* Content & Media Production Subpages */}
+          <Route path="services/podcast-production-only" element={<Suspense fallback={<PageLoader />}><PodcastProductionOnlyPage /></Suspense>} />
+          <Route path="services/podcast-production-promotion" element={<Suspense fallback={<PageLoader />}><PodcastProductionPromotionPage /></Suspense>} />
+          <Route path="services/online-pr-reputation" element={<Suspense fallback={<PageLoader />}><OnlinePRReputationPage /></Suspense>} />
+          <Route path="services/ad-shoot" element={<Suspense fallback={<PageLoader />}><AdShootPage /></Suspense>} />
+          <Route path="services/photo-shoot" element={<Suspense fallback={<PageLoader />}><PhotoShootPage /></Suspense>} />
+          
+          {/* Footer Pages */}
+          <Route path="privacy" element={<Suspense fallback={<PageLoader />}><PrivacyPage /></Suspense>} />
+          <Route path="terms" element={<Suspense fallback={<PageLoader />}><TermsPage /></Suspense>} />
+          <Route path="careers" element={<Suspense fallback={<PageLoader />}><CareersPage /></Suspense>} />
+          <Route path="sitemap" element={<Suspense fallback={<PageLoader />}><SitemapPage /></Suspense>} />
+        </Route>
+      </Routes>
     </Router>
   );
 }

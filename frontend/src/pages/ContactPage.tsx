@@ -35,14 +35,43 @@ import { companyInfo, serviceCategories } from '@/data/siteData';
 export function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    company: '',
+    service: '',
+    message: '',
+    company_website: '', // Honeypot
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setTimeout(() => {
+
+    try {
+      const response = await fetch('http://localhost:5000/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setIsSubmitted(true);
+      } else {
+        console.error('Form submission failed');
+      }
+    } catch (error) {
+      console.error('Failed to submit form:', error);
+    } finally {
       setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 1500);
+    }
   };
 
   return (
@@ -119,37 +148,51 @@ export function ContactPage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Honeypot field - hidden from humans */}
+                  <div style={{ display: 'none' }}>
+                    <label htmlFor="company_website">Company Website</label>
+                    <input
+                      type="text"
+                      id="company_website"
+                      name="company_website"
+                      value={formData.company_website}
+                      onChange={(e) => handleChange('company_website', e.target.value)}
+                      tabIndex={-1}
+                      autoComplete="off"
+                    />
+                  </div>
+
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Full Name *</Label>
-                      <Input id="name" placeholder="John Doe" required className="input-ai" />
+                      <Input id="name" placeholder="John Doe" required className="input-ai" value={formData.name} onChange={(e) => handleChange('name', e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email Address *</Label>
-                      <Input id="email" type="email" placeholder="john@example.com" required className="input-ai" />
+                      <Input id="email" type="email" placeholder="john@example.com" required className="input-ai" value={formData.email} onChange={(e) => handleChange('email', e.target.value)} />
                     </div>
                   </div>
 
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" type="tel" placeholder="8789109928" className="input-ai" />
+                      <Input id="phone" type="tel" placeholder="8789109928" className="input-ai" value={formData.phone} onChange={(e) => handleChange('phone', e.target.value)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="company">Company Name</Label>
-                      <Input id="company" placeholder="Your Company" className="input-ai" />
+                      <Input id="company" placeholder="Your Company" className="input-ai" value={formData.company} onChange={(e) => handleChange('company', e.target.value)} />
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="service">Service Interest</Label>
-                    <Select>
+                    <Select value={formData.service} onValueChange={(value) => handleChange('service', value)}>
                       <SelectTrigger className="input-ai">
                         <SelectValue placeholder="Select a service" />
                       </SelectTrigger>
                       <SelectContent>
                         {serviceCategories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
+                          <SelectItem key={category.id} value={category.title}>
                             {category.title}
                           </SelectItem>
                         ))}
@@ -165,6 +208,8 @@ export function ContactPage() {
                       rows={5}
                       required
                       className="input-ai resize-none"
+                      value={formData.message}
+                      onChange={(e) => handleChange('message', e.target.value)}
                     />
                   </div>
 

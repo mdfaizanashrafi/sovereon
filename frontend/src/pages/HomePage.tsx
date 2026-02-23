@@ -3,26 +3,10 @@
  * HOMEPAGE - Main Landing Page
  * ============================================================================
  * 
- * This page contains all the main sections of the Sovereon Inc. homepage:
- * - Hero Section with AI results expectations
- * - Catchy Results Section with metrics
- * - Client Growth Sections
- * - Why Choose Us Section
- * - Services Header/Preview
- * - Reviews Section
- * - Current Projects Section
- * - Future Quests Section
- * - Contact Form Section
- * 
- * PLACEHOLDERS:
- * - [PLACEHOLDER_HERO_IMAGE]: Hero background image
- * - [PLACEHOLDER_CLIENT_LOGO_*]: Client company logos
- * - [PLACEHOLDER_PROJECT_IMAGE_*]: Project showcase images
- * 
- * @page
+ * Dynamic homepage with CMS-driven content
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -37,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Brain,
   TrendingUp,
@@ -55,12 +39,44 @@ import {
   Send,
   ChevronRight,
 } from 'lucide-react';
-import {
-  serviceCategories,
-  testimonials,
-  currentProjects,
-  futureQuests,
-} from '@/data/siteData';
+import { cmsApi } from '@/services/cmsApi';
+
+// Types
+interface ServiceCategory {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+}
+
+interface Testimonial {
+  id: string;
+  name: string;
+  company: string;
+  role: string;
+  content: string;
+  rating: number;
+  beforeMetric: string | null;
+  afterMetric: string | null;
+}
+
+interface CurrentProject {
+  id: string;
+  title: string;
+  description: string;
+  progress: number;
+  technologies: string;
+}
+
+interface FutureQuest {
+  id: string;
+  title: string;
+  description: string;
+  timeline: string;
+  icon: string;
+}
+
+
 
 // ============================================================================
 // HERO SECTION
@@ -163,12 +179,6 @@ function HeroSection() {
         </div>
       </div>
 
-      {/* Scroll Indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <div className="w-6 h-10 rounded-full border-2 border-primary/50 flex items-start justify-center p-2">
-          <div className="w-1 h-2 bg-primary rounded-full animate-pulse" />
-        </div>
-      </div>
     </section>
   );
 }
@@ -275,67 +285,6 @@ function ResultsSection() {
 }
 
 // ============================================================================
-// CLIENT GROWTH SECTION
-// ============================================================================
-
-function ClientGrowthSection() {
-  const clients = [
-    { name: 'Bihar Tech Solutions', growth: '+150%', metric: 'Organic Traffic' },
-    { name: 'Wellness Hub', growth: '+40%', metric: 'Online Sales' },
-    { name: 'Patel Enterprises', growth: '+60%', metric: 'Operational Efficiency' },
-    { name: 'Fashion Forward', growth: '+1000%', metric: 'Social Followers' },
-  ];
-
-  return (
-    <section className="section-padding bg-muted/20 relative overflow-hidden">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <Badge className="badge-ai mb-4">Success Stories</Badge>
-          <h2 className="text-responsive-section font-bold mb-4">
-            Companies We've <span className="text-gradient">Transformed</span>
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Real results from real businesses in Bihar and beyond
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {clients.map((client, index) => (
-            <Card
-              key={client.name}
-              className="ai-card group animate-fade-in-up"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <CardContent className="p-6">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-primary">
-                    {client.name.charAt(0)}
-                  </span>
-                </div>
-                <h3 className="font-semibold text-center mb-2">{client.name}</h3>
-                <div className="text-center">
-                  <span className="text-3xl font-bold text-gradient">{client.growth}</span>
-                  <p className="text-sm text-muted-foreground">{client.metric}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="mt-8 text-center">
-          <Button asChild variant="outline">
-            <Link to="/case-studies">
-              View All Case Studies
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ============================================================================
 // WHY CHOOSE US SECTION
 // ============================================================================
 
@@ -413,6 +362,26 @@ function WhyChooseUsSection() {
 // ============================================================================
 
 function ServicesPreviewSection() {
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await cmsApi.getServiceCategories();
+        if (response.success) {
+          setCategories((response.data as ServiceCategory[])?.slice(0, 6) || []);
+        }
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCategories();
+  }, []);
+
   return (
     <section className="section-padding bg-muted/20 relative overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -426,29 +395,37 @@ function ServicesPreviewSection() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {serviceCategories.map((category, index) => (
-            <Link key={category.id} to={category.href}>
-              <Card
-                className="ai-card group h-full animate-fade-in-up"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
-                    {category.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {category.description}
-                  </p>
-                  <div className="flex items-center text-primary text-sm font-medium">
-                    Explore Services
-                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-32" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {categories.map((category, index) => (
+              <Link key={category.id} to={`/services/${category.slug}`}>
+                <Card
+                  className="ai-card group h-full animate-fade-in-up"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <CardContent className="p-6">
+                    <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
+                      {category.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {category.description}
+                    </p>
+                    <div className="flex items-center text-primary text-sm font-medium">
+                      Explore Services
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        )}
 
         <div className="mt-8 text-center">
           <Button asChild className="btn-ai">
@@ -468,6 +445,26 @@ function ServicesPreviewSection() {
 // ============================================================================
 
 function ReviewsSection() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadTestimonials = async () => {
+      try {
+        const response = await cmsApi.getTestimonials();
+        if (response.success) {
+          setTestimonials((response.data as Testimonial[])?.slice(0, 6) || []);
+        }
+      } catch (error) {
+        console.error('Failed to load testimonials:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTestimonials();
+  }, []);
+
   const renderStars = (rating: number) => {
     return [...Array(5)].map((_, i) => (
       <Star
@@ -488,54 +485,62 @@ function ReviewsSection() {
             What Our <span className="text-gradient">Clients Say</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Real feedback from businesses we've helped grow
+            Real feedback from businesses we&apos;ve helped grow
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {testimonials.slice(0, 6).map((testimonial, index) => (
-            <Card
-              key={testimonial.id}
-              className="ai-card animate-fade-in-up"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <CardContent className="p-6">
-                <div className="flex items-center gap-1 mb-4">
-                  {renderStars(testimonial.rating)}
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">
-                  "{testimonial.content}"
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-sm font-medium text-primary">
-                      {testimonial.name.charAt(0)}
-                    </span>
+        {isLoading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-64" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {testimonials.map((testimonial, index) => (
+              <Card
+                key={testimonial.id}
+                className="ai-card animate-fade-in-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-1 mb-4">
+                    {renderStars(testimonial.rating)}
                   </div>
-                  <div>
-                    <div className="font-medium text-sm">{testimonial.name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {testimonial.role}, {testimonial.company}
-                    </div>
-                  </div>
-                </div>
-                {testimonial.beforeMetric && testimonial.afterMetric && (
-                  <div className="mt-4 pt-4 border-t border-border/50">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">
-                        Before: {testimonial.beforeMetric}
-                      </span>
-                      <ArrowRight className="w-3 h-3 text-primary" />
-                      <span className="text-primary font-medium">
-                        After: {testimonial.afterMetric}
+                  <p className="text-sm text-muted-foreground mb-4">
+                    &quot;{testimonial.content}&quot;
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                      <span className="text-sm font-medium text-primary">
+                        {testimonial.name.charAt(0)}
                       </span>
                     </div>
+                    <div>
+                      <div className="font-medium text-sm">{testimonial.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {testimonial.role}, {testimonial.company}
+                      </div>
+                    </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  {testimonial.beforeMetric && testimonial.afterMetric && (
+                    <div className="mt-4 pt-4 border-t border-border/50">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">
+                          Before: {testimonial.beforeMetric}
+                        </span>
+                        <ArrowRight className="w-3 h-3 text-primary" />
+                        <span className="text-primary font-medium">
+                          After: {testimonial.afterMetric}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
         <div className="mt-8 text-center">
           <Button asChild variant="outline">
@@ -555,6 +560,34 @@ function ReviewsSection() {
 // ============================================================================
 
 function CurrentProjectsSection() {
+  const [projects, setProjects] = useState<CurrentProject[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const response = await cmsApi.getCurrentProjects();
+        if (response.success) {
+          setProjects((response.data as CurrentProject[]) || []);
+        }
+      } catch (error) {
+        console.error('Failed to load projects:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProjects();
+  }, []);
+
+  const getTechnologies = (techJson: string) => {
+    try {
+      return JSON.parse(techJson);
+    } catch {
+      return [];
+    }
+  };
+
   return (
     <section className="section-padding bg-muted/20 relative overflow-hidden">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -564,46 +597,59 @@ function CurrentProjectsSection() {
             Our <span className="text-gradient">Current Projects</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            See what we're building right now
+            See what we&apos;re building right now
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {currentProjects.map((project, index) => (
-            <Card
-              key={project.id}
-              className="ai-card animate-fade-in-up"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <CardContent className="p-6">
-                <div className="w-full h-32 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <Zap className="w-12 h-12 text-primary/50" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">{project.title}</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {project.description}
-                </p>
-                <div className="mb-4">
-                  <div className="flex items-center justify-between text-sm mb-2">
-                    <span className="text-muted-foreground">Progress</span>
-                    <span className="font-medium">{project.progress}%</span>
+        {isLoading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-64" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map((project, index) => (
+              <Card
+                key={project.id}
+                className="ai-card animate-fade-in-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <CardContent className="p-6">
+                  <div className="w-full h-32 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                    <Zap className="w-12 h-12 text-primary/50" />
                   </div>
-                  <Progress value={project.progress} className="h-2" />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {project.technologies.map((tech) => (
-                    <span
-                      key={tech}
-                      className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary"
-                    >
-                      {tech}
-                    </span>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  <h3 className="text-lg font-semibold mb-2">{project.title}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {project.description}
+                  </p>
+                  <div className="mb-4">
+                    <div className="flex items-center justify-between text-sm mb-2">
+                      <span className="text-muted-foreground">Progress</span>
+                      <span className="font-medium">{project.progress}%</span>
+                    </div>
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div 
+                        className="bg-primary rounded-full h-2 transition-all"
+                        style={{ width: `${project.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {getTechnologies(project.technologies).map((tech: string) => (
+                      <span
+                        key={tech}
+                        className="px-2 py-1 text-xs rounded-full bg-primary/10 text-primary"
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -614,6 +660,26 @@ function CurrentProjectsSection() {
 // ============================================================================
 
 function FutureQuestsSection() {
+  const [quests, setQuests] = useState<FutureQuest[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadQuests = async () => {
+      try {
+        const response = await cmsApi.getFutureQuests();
+        if (response.success) {
+          setQuests((response.data as FutureQuest[]) || []);
+        }
+      } catch (error) {
+        console.error('Failed to load quests:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadQuests();
+  }, []);
+
   const iconMap: Record<string, React.ElementType> = {
     Mic,
     Building,
@@ -634,50 +700,58 @@ function FutureQuestsSection() {
           </p>
         </div>
 
-        <div className="max-w-3xl mx-auto">
-          <div className="relative">
-            {/* Timeline Line */}
-            <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-border md:-translate-x-1/2" />
+        {isLoading ? (
+          <div className="max-w-3xl mx-auto space-y-4">
+            {[...Array(4)].map((_, i) => (
+              <Skeleton key={i} className="h-24" />
+            ))}
+          </div>
+        ) : (
+          <div className="max-w-3xl mx-auto">
+            <div className="relative">
+              {/* Timeline Line */}
+              <div className="absolute left-4 md:left-1/2 top-0 bottom-0 w-px bg-border md:-translate-x-1/2" />
 
-            {/* Timeline Items */}
-            <div className="space-y-8">
-              {futureQuests.map((quest, index) => {
-                const Icon = iconMap[quest.icon] || Zap;
-                return (
-                  <div
-                    key={quest.id}
-                    className={`relative flex items-start gap-4 md:gap-8 animate-fade-in-up`}
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    {/* Timeline Dot */}
-                    <div className="absolute left-4 md:left-1/2 w-8 h-8 rounded-full bg-primary flex items-center justify-center md:-translate-x-1/2 z-10">
-                      <Icon className="w-4 h-4 text-primary-foreground" />
-                    </div>
-
-                    {/* Content */}
+              {/* Timeline Items */}
+              <div className="space-y-8">
+                {quests.map((quest, index) => {
+                  const Icon = iconMap[quest.icon] || Zap;
+                  return (
                     <div
-                      className={`ml-16 md:ml-0 md:w-1/2 ${
-                        index % 2 === 0 ? 'md:pr-12 md:text-right' : 'md:ml-auto md:pl-12'
-                      }`}
+                      key={quest.id}
+                      className="relative flex items-start gap-4 md:gap-8 animate-fade-in-up"
+                      style={{ animationDelay: `${index * 100}ms` }}
                     >
-                      <Card className="ai-card">
-                        <CardContent className="p-4">
-                          <span className="text-xs font-medium text-primary">
-                            {quest.timeline}
-                          </span>
-                          <h3 className="font-semibold mt-1">{quest.title}</h3>
-                          <p className="text-sm text-muted-foreground mt-1">
-                            {quest.description}
-                          </p>
-                        </CardContent>
-                      </Card>
+                      {/* Timeline Dot */}
+                      <div className="absolute left-4 md:left-1/2 w-8 h-8 rounded-full bg-primary flex items-center justify-center md:-translate-x-1/2 z-10">
+                        <Icon className="w-4 h-4 text-primary-foreground" />
+                      </div>
+
+                      {/* Content */}
+                      <div
+                        className={`ml-16 md:ml-0 md:w-1/2 ${
+                          index % 2 === 0 ? 'md:pr-12 md:text-right' : 'md:ml-auto md:pl-12'
+                        }`}
+                      >
+                        <Card className="ai-card">
+                          <CardContent className="p-4">
+                            <span className="text-xs font-medium text-primary">
+                              {quest.timeline}
+                            </span>
+                            <h3 className="font-semibold mt-1">{quest.title}</h3>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {quest.description}
+                            </p>
+                          </CardContent>
+                        </Card>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </section>
   );
@@ -690,15 +764,58 @@ function FutureQuestsSection() {
 function ContactFormSection() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    service: '',
+    message: '',
+    company_website: '', // Honeypot
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await cmsApi.getServiceCategories();
+        if (response.success) {
+          setCategories((response.data as ServiceCategory[]) || []);
+        }
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+      }
+    };
+
+    loadCategories();
+  }, []);
+
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate form submission
-    setTimeout(() => {
+
+    try {
+      const response = await fetch('http://localhost:5000/api/consultation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setIsSubmitted(true);
+      } else {
+        console.error('Form submission failed');
+      }
+    } catch (error) {
+      console.error('Failed to submit form:', error);
+    } finally {
       setIsSubmitting(false);
-      setIsSubmitted(true);
-    }, 1500);
+    }
   };
 
   return (
@@ -711,7 +828,7 @@ function ContactFormSection() {
               Get Your Free <span className="text-gradient">AI Consultation</span>
             </h2>
             <p className="text-lg text-muted-foreground">
-              Tell us about your project and we'll get back to you within 24 hours
+              Tell us about your project and we&apos;ll get back to you within 24 hours
             </p>
           </div>
 
@@ -724,19 +841,35 @@ function ContactFormSection() {
                   </div>
                   <h3 className="text-xl font-semibold mb-2">Thank You!</h3>
                   <p className="text-muted-foreground">
-                    We've received your inquiry and will contact you soon.
+                    We&apos;ve received your inquiry and will contact you soon.
                   </p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Honeypot field - hidden from humans */}
+                  <div style={{ display: 'none' }}>
+                    <label htmlFor="company_website">Company Website</label>
+                    <input
+                      type="text"
+                      id="company_website"
+                      name="company_website"
+                      value={formData.company_website}
+                      onChange={(e) => handleChange('company_website', e.target.value)}
+                      tabIndex={-1}
+                      autoComplete="off"
+                    />
+                  </div>
+
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Full Name</Label>
                       <Input
                         id="name"
-                        placeholder="Umakant Kumar"
+                        placeholder="Your name"
                         required
                         className="input-ai"
+                        value={formData.name}
+                        onChange={(e) => handleChange('name', e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
@@ -747,6 +880,8 @@ function ContactFormSection() {
                         placeholder="john@example.com"
                         required
                         className="input-ai"
+                        value={formData.email}
+                        onChange={(e) => handleChange('email', e.target.value)}
                       />
                     </div>
                   </div>
@@ -759,17 +894,19 @@ function ContactFormSection() {
                         type="tel"
                         placeholder="9876543210"
                         className="input-ai"
+                        value={formData.phone}
+                        onChange={(e) => handleChange('phone', e.target.value)}
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="service">Service Interest</Label>
-                      <Select>
+                      <Select value={formData.service} onValueChange={(value) => handleChange('service', value)}>
                         <SelectTrigger className="input-ai">
                           <SelectValue placeholder="Select a service" />
                         </SelectTrigger>
                         <SelectContent>
-                          {serviceCategories.map((category) => (
-                            <SelectItem key={category.id} value={category.id}>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.title}>
                               {category.title}
                             </SelectItem>
                           ))}
@@ -785,6 +922,9 @@ function ContactFormSection() {
                       placeholder="Tell us about your project and goals..."
                       rows={4}
                       className="input-ai resize-none"
+                      value={formData.message}
+                      onChange={(e) => handleChange('message', e.target.value)}
+                      required
                     />
                   </div>
 
@@ -824,7 +964,6 @@ export function HomePage() {
     <div className="space-y-0">
       <HeroSection />
       <ResultsSection />
-      <ClientGrowthSection />
       <WhyChooseUsSection />
       <ServicesPreviewSection />
       <ReviewsSection />

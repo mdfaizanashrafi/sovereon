@@ -79,7 +79,7 @@ export function PrivacyPage() {
                 <p className="text-muted-foreground">
                   If you have any questions about this Privacy Policy, please contact us at:
                   <br />
-                  Email: contact@sovereoninc.com
+                  Email: sovereon@sovereon.online
                   <br />
                   Phone: 8789109928
                 </p>

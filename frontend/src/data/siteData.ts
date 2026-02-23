@@ -27,16 +27,16 @@ export const companyInfo = {
   tagline: 'AI-Powered Digital Solutions',
   establishmentDate: 'February 2026',
   address: {
-    street: 'Habibpur',
+    street: '',
     city: 'Bhagalpur',
     state: 'Bihar',
     pincode: '812002',
     country: 'India',
-    full: 'Habibpur, Bhagalpur, Bihar - 812002, India',
+    full: 'Bhagalpur, Bihar - 812002, India',
   },
   contact: {
     phone: '8789109928',
-    email: 'contact@sovereoninc.com',
+    email: 'sovereon@sovereon.online',
     website: '[PLACEHOLDER_WEBSITE_URL]',
   },
   social: {
@@ -52,21 +52,21 @@ export const companyInfo = {
 
 export const teamMembers = [
   {
-    name: 'Md Faizan',
+    name: 'Md Faizan Ashrafi',
     role: 'Technical Lead',
     department: 'Technicalities',
     description: 'Oversees all technical operations, software development, and AI integration strategies.',
     image: '[PLACEHOLDER_TEAM_IMAGE_1]',
   },
   {
-    name: 'Altamash Khan',
+    name: 'Md Altamash Khan',
     role: 'CRM Manager',
     department: 'Customer Relations',
     description: 'Manages client relationships, ensures customer satisfaction, and leads support initiatives.',
     image: '[PLACEHOLDER_TEAM_IMAGE_2]',
   },
   {
-    name: 'Jawed Khan',
+    name: 'Jawed Akhter',
     role: 'Project Manager',
     department: 'Project Management',
     description: 'Leads project planning, execution, and delivery to ensure timely and successful project completion.',
@@ -80,14 +80,14 @@ export const teamMembers = [
     image: '[PLACEHOLDER_TEAM_IMAGE_4]',
   },
   {
-    name: 'Zahid Sheikh',
+    name: 'Md Zahid Alam',
     role: 'AI & Graphic Designer',
     department: 'Design & AI',
     description: 'Combines AI expertise with graphic design to deliver innovative visual solutions.',
     image: '[PLACEHOLDER_TEAM_IMAGE_5]',
   },
   {
-    name: 'Kaify',
+    name: 'Kaifee',
     role: 'Data Analyst',
     department: 'Data Analytics',
     description: 'Analyzes data insights to drive strategic business decisions and optimization.',
@@ -108,7 +108,7 @@ export const teamMembers = [
     image: '[PLACEHOLDER_TEAM_IMAGE_8]',
   },
   {
-    name: 'Shadan Ghyas',
+    name: 'Shadan Ghayas',
     role: 'PR Manager',
     department: 'Public Relations',
     description: 'Manages company communications and public relations to build brand reputation.',
@@ -122,11 +122,18 @@ export const teamMembers = [
     image: '[PLACEHOLDER_TEAM_IMAGE_10]',
   },
   {
-    name: 'Md Junaid Ashrafi',
+    name: 'Md Junnaid Ashrafi',
     role: 'Business Analyst',
     department: 'Business Analysis',
     description: 'Analyzes business processes and market trends to drive strategic decision-making and operational improvements.',
     image: '[PLACEHOLDER_TEAM_IMAGE_11]',
+  },
+  {
+    name: 'Ayush Arya',
+    role: 'Content Creator',
+    department: 'Content Creation',
+    description: 'Creates engaging and creative content across various platforms to build brand presence and audience engagement.',
+    image: '[PLACEHOLDER_TEAM_IMAGE_12]',
   },
 ];
 

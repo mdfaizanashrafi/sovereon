@@ -3,25 +3,80 @@
  * WHO WE ARE PAGE
  * ============================================================================
  * 
- * Company information page with:
- * - Company overview and mission
- * - Team members (Md Faizan, Altamash Khan, Md Junaid Ashrafi, etc.)
- * - Company history (established Feb 2026)
- * - Location information
- * 
- * PLACEHOLDERS:
- * - [PLACEHOLDER_TEAM_IMAGE_*]: Team member photos
- * - [PLACEHOLDER_OFFICE_IMAGE]: Office photo
- * 
- * @page
+ * Company information page with dynamic team members from CMS
  */
 
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Brain, MapPin, Calendar, Users, Target, Lightbulb } from 'lucide-react';
-import { companyInfo, teamMembers } from '@/data/siteData';
+import { cmsApi } from '@/services/cmsApi';
+import { Skeleton } from '@/components/ui/skeleton';
+
+interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  department: string;
+  description: string;
+  image: string | null;
+}
+
+interface GlobalSetting {
+  key: string;
+  value: string;
+}
 
 export function WhoWeArePage() {
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [settings, setSettings] = useState<Record<string, string>>({});
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [teamRes, settingsRes] = await Promise.all([
+          cmsApi.getTeamMembers(),
+          cmsApi.getSettings(),
+        ]);
+
+        if (teamRes.success) {
+          setTeamMembers((teamRes.data as TeamMember[]) || []);
+        }
+
+        if (settingsRes.success) {
+          const settingsMap: Record<string, string> = {};
+          (settingsRes.data as GlobalSetting[] || []).forEach((s) => {
+            settingsMap[s.key] = s.value;
+          });
+          setSettings(settingsMap);
+        }
+      } catch (error) {
+        console.error('Failed to load data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  const companyName = settings['companyName'] || 'Sovereon Inc.';
+  const phone = settings['contactPhone'] || '8789109928';
+  const email = settings['contactEmail'] || 'sovereon@sovereon.online';
+  const address = `${settings['addressCity'] || 'Bhagalpur'}, ${settings['addressState'] || 'Bihar'} - ${settings['addressPincode'] || '812002'}, ${settings['addressCountry'] || 'India'}`;
+
+  if (isLoading) {
+    return (
+      <div className="pt-24 pb-16 space-y-8">
+        <div className="container mx-auto px-4">
+          <Skeleton className="h-8 w-64 mx-auto mb-4" />
+          <Skeleton className="h-4 w-full max-w-2xl mx-auto" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="pt-24 pb-16">
       {/* Hero Section */}
@@ -32,7 +87,7 @@ export function WhoWeArePage() {
             Who <span className="text-gradient">We Are</span>
           </h1>
           <p className="text-lg text-muted-foreground">
-            Sovereon Inc. is a forward-thinking digital solutions company based in 
+            {companyName} is a forward-thinking digital solutions company based in 
             Bhagalpur, Bihar, leveraging AI technology to help businesses grow.
           </p>
         </div>
@@ -45,13 +100,13 @@ export function WhoWeArePage() {
             <h2 className="text-3xl font-bold mb-6">Our Story</h2>
             <div className="space-y-4 text-muted-foreground">
               <p>
-                Founded in February 2026, Sovereon Inc. emerged from a vision to bring 
+                Founded in February 2026, {companyName} emerged from a vision to bring 
                 world-class digital solutions to businesses in Bihar and beyond. We recognized 
                 that local businesses needed access to cutting-edge technology and AI-powered 
                 strategies to compete in an increasingly digital marketplace.
               </p>
               <p>
-                Our name, "Sovereon," reflects our commitment to sovereignty in the digital 
+                Our name, &quot;Sovereon,&quot; reflects our commitment to sovereignty in the digital 
                 space — empowering businesses to take control of their online presence and 
                 achieve independence through technology.
               </p>
@@ -132,7 +187,7 @@ export function WhoWeArePage() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {teamMembers.map((member) => (
-            <Card key={member.name} className="ai-card">
+            <Card key={member.id} className="ai-card">
               <CardContent className="p-6">
                 <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
                   <span className="text-3xl font-bold text-primary">
@@ -164,14 +219,14 @@ export function WhoWeArePage() {
             <div className="grid md:grid-cols-2 gap-8">
               <div>
                 <p className="text-muted-foreground mb-4">
-                  We're proud to be based in Bhagalpur, Bihar, serving clients locally 
+                  We&apos;re proud to be based in Bhagalpur, Bihar, serving clients locally 
                   and across India with world-class digital solutions.
                 </p>
                 <div className="space-y-2">
-                  <p className="font-medium">{companyInfo.name}</p>
-                  <p className="text-muted-foreground">{companyInfo.address.full}</p>
-                  <p className="text-muted-foreground">Phone: {companyInfo.contact.phone}</p>
-                  <p className="text-muted-foreground">Email: {companyInfo.contact.email}</p>
+                  <p className="font-medium">{companyName}</p>
+                  <p className="text-muted-foreground">{address}</p>
+                  <p className="text-muted-foreground">Phone: {phone}</p>
+                  <p className="text-muted-foreground">Email: {email}</p>
                 </div>
               </div>
               <div className="h-48 rounded-lg bg-primary/10 flex items-center justify-center">

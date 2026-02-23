@@ -80,7 +80,7 @@ export function TermsPage() {
                 <p className="text-muted-foreground">
                   For questions about these terms, contact us at:
                   <br />
-                  Email: contact@sovereoninc.com
+                  Email: sovereon@sovereon.online
                   <br />
                   Phone: 8789109928
                 </p>

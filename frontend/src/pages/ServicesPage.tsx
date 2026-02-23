@@ -1,149 +1,115 @@
 /**
  * ============================================================================
- * SERVICES PAGE - Main Services Listing
+ * SERVICES PAGE
  * ============================================================================
  * 
- * This page displays all service categories with:
- * - Overview of all 6 service categories
- * - Links to individual service subpages
- * - Strategy preview for each category
- * - Call-to-action for each service
- * 
- * @page
+ * Displays service categories and services dynamically from CMS
  */
 
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  MessageSquare,
-  Code,
-  Wrench,
-  Cloud,
-  TrendingUp,
-  Camera,
-  ArrowRight,
-  CheckCircle,
-  Brain,
-} from 'lucide-react';
-import { serviceCategories } from '@/data/siteData';
+import { ArrowRight } from 'lucide-react';
+import { cmsApi } from '@/services/cmsApi';
+import { Skeleton } from '@/components/ui/skeleton';
 
-// Icon mapping for service categories
-const categoryIcons: Record<string, React.ElementType> = {
-  'communication-messaging': MessageSquare,
-  'software-app-development': Code,
-  'maintenance-support': Wrench,
-  'cloud-it-solutions': Cloud,
-  'digital-marketing-seo': TrendingUp,
-  'content-media-production': Camera,
-};
+interface Service {
+  id: string;
+  slug: string;
+  title: string;
+  shortDescription: string;
+  order: number;
+}
+
+interface ServiceCategory {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  services: Service[];
+}
 
 export function ServicesPage() {
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const response = await cmsApi.getServiceCategories();
+        if (response.success) {
+          setCategories((response.data as ServiceCategory[]) || []);
+        }
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadCategories();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="pt-24 pb-16">
+        <div className="container mx-auto px-4">
+          <Skeleton className="h-8 w-64 mx-auto mb-4" />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-48" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="pt-24 pb-16">
-      {/* Header Section */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-        <div className="max-w-3xl mx-auto text-center">
-          <Badge className="badge-ai mb-4">What We Offer</Badge>
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <Badge className="badge-ai mb-4">Our Services</Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Our <span className="text-gradient">Services</span>
+            Solutions for <span className="text-gradient">Every Need</span>
           </h1>
-          <p className="text-lg text-muted-foreground">
-            Comprehensive digital solutions powered by advanced AI technology.
-            From communication to content creation, we've got you covered.
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Comprehensive digital services powered by advanced AI technology
           </p>
         </div>
-      </section>
 
-      {/* Services Grid */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-8">
-          {serviceCategories.map((category, index) => {
-            const Icon = categoryIcons[category.id] || Brain;
-            return (
-              <Card
-                key={category.id}
-                className="ai-card group overflow-hidden animate-fade-in-up"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <CardContent className="p-0">
-                  {/* Category Header */}
-                  <div className="p-6 border-b border-border/50">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                        <Icon className="w-6 h-6 text-primary" />
-                      </div>
-                      <div className="flex-1">
-                        <h2 className="text-xl font-semibold mb-2 group-hover:text-primary transition-colors">
-                          {category.title}
-                        </h2>
-                        <p className="text-muted-foreground text-sm">
-                          {category.description}
+        {/* Service Categories */}
+        <div className="space-y-12">
+          {categories.map((category) => (
+            <div key={category.id}>
+              <h2 className="text-2xl font-bold mb-4">{category.title}</h2>
+              <p className="text-muted-foreground mb-6">{category.description}</p>
+              
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {category.services?.map((service) => (
+                  <Link key={service.id} to={`/services/${service.slug}`}>
+                    <Card className="ai-card group h-full">
+                      <CardContent className="p-6">
+                        <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
+                          {service.title}
+                        </h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          {service.shortDescription}
                         </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Services List */}
-                  <div className="p-6">
-                    <div className="grid sm:grid-cols-2 gap-3 mb-6">
-                      {category.services.map((service) => (
-                        <Link
-                          key={service.id}
-                          to={service.href}
-                          className="flex items-start gap-2 p-3 rounded-lg hover:bg-accent transition-colors group/item"
-                        >
-                          <CheckCircle className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                          <div>
-                            <span className="text-sm font-medium group-hover/item:text-primary transition-colors">
-                              {service.title}
-                            </span>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {service.shortDescription}
-                            </p>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-
-                    {/* CTA */}
-                    <Button asChild variant="outline" className="w-full">
-                      <Link to={category.href}>
-                        Explore {category.title}
-                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-16">
-        <Card className="ai-card bg-gradient-to-br from-primary/10 to-accent/10">
-          <CardContent className="p-8 md:p-12 text-center">
-            <Brain className="w-12 h-12 mx-auto mb-4 text-primary" />
-            <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              Not Sure What You Need?
-            </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto mb-6">
-              Let our AI analyze your business and recommend the perfect solution.
-              Get a free consultation with our experts.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button asChild className="btn-ai">
-                <Link to="/pricing">Get Started</Link>
-              </Button>
-              <Button asChild variant="outline">
-                <Link to="/contact-us">Contact Us</Link>
-              </Button>
+                        <div className="flex items-center text-primary text-sm font-medium">
+                          Learn More
+                          <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </CardContent>
-        </Card>
+          ))}
+        </div>
       </section>
     </div>
   );

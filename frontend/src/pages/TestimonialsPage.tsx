@@ -3,83 +3,89 @@
  * TESTIMONIALS PAGE
  * ============================================================================
  * 
- * Features:
- * - Client reviews with star ratings
- * - Before/after results
- * - Company information
- * - Filter by service category
- * 
- * PLACEHOLDERS:
- * - [PLACEHOLDER_TESTIMONIAL_AVATAR_*]: Client avatar images
- * 
- * @page
+ * Displays client testimonials dynamically from CMS
  */
 
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, TrendingUp, Quote } from 'lucide-react';
-import { testimonials } from '@/data/siteData';
+import { Star, ArrowRight } from 'lucide-react';
+import { cmsApi } from '@/services/cmsApi';
+import { Skeleton } from '@/components/ui/skeleton';
+
+interface Testimonial {
+  id: string;
+  name: string;
+  company: string;
+  role: string;
+  content: string;
+  rating: number;
+  beforeMetric: string | null;
+  afterMetric: string | null;
+}
 
 export function TestimonialsPage() {
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadTestimonials = async () => {
+      try {
+        const response = await cmsApi.getTestimonials();
+        if (response.success) {
+          setTestimonials((response.data as Testimonial[]) || []);
+        }
+      } catch (error) {
+        console.error('Failed to load testimonials:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTestimonials();
+  }, []);
+
   const renderStars = (rating: number) => {
     return [...Array(5)].map((_, i) => (
       <Star
         key={i}
-        className={`w-5 h-5 ${
+        className={`w-4 h-4 ${
           i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'
         }`}
       />
     ));
   };
 
+  if (isLoading) {
+    return (
+      <div className="pt-24 pb-16">
+        <div className="container mx-auto px-4">
+          <Skeleton className="h-8 w-64 mx-auto mb-4" />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-64" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="pt-24 pb-16">
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-        <div className="max-w-3xl mx-auto text-center">
-          <Badge className="badge-ai mb-4">Client Stories</Badge>
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <Badge className="badge-ai mb-4">Testimonials</Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
             What Our <span className="text-gradient">Clients Say</span>
           </h1>
-          <p className="text-lg text-muted-foreground">
-            Real feedback from real businesses we've helped grow. 
-            See the results we've achieved together.
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Real feedback from businesses we&apos;ve helped grow with our AI-powered solutions
           </p>
         </div>
-      </section>
 
-      {/* Stats */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="ai-card">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-gradient">50+</div>
-              <div className="text-sm text-muted-foreground">Happy Clients</div>
-            </CardContent>
-          </Card>
-          <Card className="ai-card">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-gradient">95%</div>
-              <div className="text-sm text-muted-foreground">Satisfaction Rate</div>
-            </CardContent>
-          </Card>
-          <Card className="ai-card">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-gradient">4.9</div>
-              <div className="text-sm text-muted-foreground">Average Rating</div>
-            </CardContent>
-          </Card>
-          <Card className="ai-card">
-            <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold text-gradient">30%</div>
-              <div className="text-sm text-muted-foreground">Avg. Growth</div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Testimonials Grid */}
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Testimonials Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((testimonial, index) => (
             <Card
@@ -88,40 +94,34 @@ export function TestimonialsPage() {
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <CardContent className="p-6">
-                <Quote className="w-8 h-8 text-primary/30 mb-4" />
-                
                 <div className="flex items-center gap-1 mb-4">
                   {renderStars(testimonial.rating)}
                 </div>
-                
-                <p className="text-muted-foreground mb-6">
-                  "{testimonial.content}"
+                <p className="text-sm text-muted-foreground mb-4">
+                  &quot;{testimonial.content}&quot;
                 </p>
-                
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                    <span className="text-lg font-medium text-primary">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <span className="text-sm font-medium text-primary">
                       {testimonial.name.charAt(0)}
                     </span>
                   </div>
                   <div>
-                    <div className="font-medium">{testimonial.name}</div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="font-medium text-sm">{testimonial.name}</div>
+                    <div className="text-xs text-muted-foreground">
                       {testimonial.role}, {testimonial.company}
                     </div>
                   </div>
                 </div>
-                
                 {testimonial.beforeMetric && testimonial.afterMetric && (
-                  <div className="pt-4 border-t border-border/50">
-                    <div className="flex items-center gap-2 text-sm">
-                      <TrendingUp className="w-4 h-4 text-primary" />
-                      <span className="text-muted-foreground">Result:</span>
-                      <span className="text-muted-foreground line-through">
-                        {testimonial.beforeMetric}
+                  <div className="mt-4 pt-4 border-t border-border/50">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">
+                        Before: {testimonial.beforeMetric}
                       </span>
+                      <ArrowRight className="w-3 h-3 text-primary" />
                       <span className="text-primary font-medium">
-                        {testimonial.afterMetric}
+                        After: {testimonial.afterMetric}
                       </span>
                     </div>
                   </div>

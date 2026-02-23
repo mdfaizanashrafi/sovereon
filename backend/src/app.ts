@@ -2,17 +2,24 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
-import passport from './middleware/passport';
 import 'dotenv/config';
 
-import authRoutes from './routes/auth.routes';
-import oauthRoutes from './routes/oauth.routes';
+// Extend session to include adminId
+declare module 'express-session' {
+  interface SessionData {
+    adminId?: string;
+  }
+}
+
 import userRoutes from './routes/users.routes';
 import serviceRoutes from './routes/services.routes';
 import orderRoutes from './routes/orders.routes';
 import invoiceRoutes from './routes/invoices.routes';
 import subscriptionRoutes from './routes/subscriptions.routes';
 import paymentRoutes from './routes/payments.routes';
+import adminRoutes from './routes/admin.routes';
+import publicRoutes from './routes/public.routes';
+import contactRoutes from './routes/contact.routes';
 
 const app: Express = express();
 const PORT = parseInt(process.env.PORT || '5000', 10);
@@ -29,7 +36,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Session middleware for Passport
+// Session middleware for Admin
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-session-secret-change-this',
   resave: false,
@@ -41,10 +48,6 @@ app.use(session({
     sameSite: 'lax',
   },
 }));
-
-// Passport middleware
-app.use(passport.initialize());
-app.use(passport.session());
 
 // Request logging middleware (simple)
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -62,14 +65,15 @@ app.get('/api/health', (req: Request, res: Response) => {
 });
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/oauth', oauthRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/public', publicRoutes);
+app.use('/api', contactRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
