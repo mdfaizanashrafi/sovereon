@@ -2,6 +2,15 @@ import { Request, Response, NextFunction } from 'express';
 import { verifyToken, TokenPayload } from '../utils/jwt';
 import { AppError, ErrorCodes } from '../utils/errors';
 
+// Extend Express Request to include user from JWT
+declare global {
+  namespace Express {
+    interface Request {
+      user?: TokenPayload;
+    }
+  }
+}
+
 export function authMiddleware(req: Request, res: Response, next: NextFunction) {
   const token = req.headers.authorization?.split(' ')[1];
 

@@ -40,12 +40,19 @@ const CareersPage = lazy(() => import('./pages/CareersPage').then(m => ({ defaul
 const SitemapPage = lazy(() => import('./pages/SitemapPage').then(m => ({ default: m.SitemapPage })));
 
 // Lazy load service pages
+const AIServicesPage = lazy(() => import('./pages/services/AIServicesPage').then(m => ({ default: m.AIServicesPage })));
 const CommunicationMessagingPage = lazy(() => import('./pages/services/CommunicationMessagingPage').then(m => ({ default: m.CommunicationMessagingPage })));
 const SoftwareAppDevelopmentPage = lazy(() => import('./pages/services/SoftwareAppDevelopmentPage').then(m => ({ default: m.SoftwareAppDevelopmentPage })));
 const MaintenanceSupportPage = lazy(() => import('./pages/services/MaintenanceSupportPage').then(m => ({ default: m.MaintenanceSupportPage })));
 const CloudITSolutionsPage = lazy(() => import('./pages/services/CloudITSolutionsPage').then(m => ({ default: m.CloudITSolutionsPage })));
 const DigitalMarketingSEOPage = lazy(() => import('./pages/services/DigitalMarketingSEOPage').then(m => ({ default: m.DigitalMarketingSEOPage })));
 const ContentMediaProductionPage = lazy(() => import('./pages/services/ContentMediaProductionPage').then(m => ({ default: m.ContentMediaProductionPage })));
+
+// Lazy load AI Services subpages
+const AISeoSearchPage = lazy(() => import('./pages/services/AISeoSearchPage').then(m => ({ default: m.AISeoSearchPage })));
+const PersonalizedAIAgentsPage = lazy(() => import('./pages/services/PersonalizedAIAgentsPage').then(m => ({ default: m.PersonalizedAIAgentsPage })));
+const AIContentGenerationPage = lazy(() => import('./pages/services/AIContentGenerationPage').then(m => ({ default: m.AIContentGenerationPage })));
+const AIDataAnalyticsPage = lazy(() => import('./pages/services/AIDataAnalyticsPage').then(m => ({ default: m.AIDataAnalyticsPage })));
 
 // Lazy load service subpages
 const BroadcastSMSPage = lazy(() => import('./pages/services/BroadcastSMSPage').then(m => ({ default: m.BroadcastSMSPage })));
@@ -131,6 +138,9 @@ function App() {
           <Route path="case-studies" element={<Suspense fallback={<PageLoader />}><CaseStudiesPage /></Suspense>} />
           <Route path="blog" element={<Suspense fallback={<PageLoader />}><BlogPage /></Suspense>} />
           
+          {/* AI Services Category Page */}
+          <Route path="services/ai-services" element={<Suspense fallback={<PageLoader />}><AIServicesPage /></Suspense>} />
+          
           {/* Service Category Pages */}
           <Route path="services/communication-messaging" element={<Suspense fallback={<PageLoader />}><CommunicationMessagingPage /></Suspense>} />
           <Route path="services/software-app-development" element={<Suspense fallback={<PageLoader />}><SoftwareAppDevelopmentPage /></Suspense>} />
@@ -138,6 +148,12 @@ function App() {
           <Route path="services/cloud-it-solutions" element={<Suspense fallback={<PageLoader />}><CloudITSolutionsPage /></Suspense>} />
           <Route path="services/digital-marketing-seo" element={<Suspense fallback={<PageLoader />}><DigitalMarketingSEOPage /></Suspense>} />
           <Route path="services/content-media-production" element={<Suspense fallback={<PageLoader />}><ContentMediaProductionPage /></Suspense>} />
+          
+          {/* AI Services Subpages */}
+          <Route path="services/ai-seo-search" element={<Suspense fallback={<PageLoader />}><AISeoSearchPage /></Suspense>} />
+          <Route path="services/personalized-ai-agents" element={<Suspense fallback={<PageLoader />}><PersonalizedAIAgentsPage /></Suspense>} />
+          <Route path="services/ai-content-generation" element={<Suspense fallback={<PageLoader />}><AIContentGenerationPage /></Suspense>} />
+          <Route path="services/ai-data-analytics" element={<Suspense fallback={<PageLoader />}><AIDataAnalyticsPage /></Suspense>} />
           
           {/* Communication & Messaging Subpages */}
           <Route path="services/broadcast-sms" element={<Suspense fallback={<PageLoader />}><BroadcastSMSPage /></Suspense>} />

@@ -4,8 +4,9 @@ services:
     runtime: node
     region: oregon
     plan: standard
-    buildCommand: cd backend && npm install && npm run build
+    buildCommand: cd backend && npm ci && npm run build
     startCommand: cd backend && npm start
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
@@ -15,14 +16,24 @@ services:
         fromDatabase:
           name: sovereon-db
           property: connectionString
-      - key: JWT_SECRET
+      # Admin Session Secret (Required for admin panel login)
+      - key: SESSION_SECRET
+        generateValue: true
+      # Email Configuration (Required for contact form)
+      - key: SMTP_HOST
+        value: smtp.zoho.in
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        value: partners@sovereon.online
+      - key: SMTP_PASSWORD
         sync: false
-      - key: JWT_EXPIRY
-        value: 15m
-      - key: REFRESH_TOKEN_EXPIRY
-        value: 7d
+      - key: SMTP_FROM
+        value: Sovereon <partners@sovereon.online>
+      # CORS Configuration
       - key: FRONTEND_URL
         value: https://sovereon.vercel.app
+      # Logging
       - key: LOG_LEVEL
         value: info
 databases:

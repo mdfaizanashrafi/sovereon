@@ -19,6 +19,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { Brain, Instagram, Linkedin, Facebook, Phone, MapPin, Mail, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { companyInfo } from '@/data/siteData';
 
 // Footer navigation sections
 const footerLinks = {
@@ -49,23 +50,23 @@ const footerLinks = {
   ],
 };
 
-// Social media links - UPDATE THESE PLACEHOLDERS
+// Social media links from siteData
 const socialLinks = [
   {
     icon: Instagram,
-    href: '[PLACEHOLDER_SOCIAL_INSTAGRAM]',
+    href: companyInfo.social.instagram,
     label: 'Instagram',
     username: '@sovereoninc',
   },
   {
     icon: Linkedin,
-    href: '[PLACEHOLDER_SOCIAL_LINKEDIN]',
+    href: companyInfo.social.linkedin,
     label: 'LinkedIn',
     username: 'Sovereon Inc.',
   },
   {
     icon: Facebook,
-    href: '[PLACEHOLDER_SOCIAL_FACEBOOK]',
+    href: companyInfo.social.facebook,
     label: 'Facebook',
     username: 'Sovereon Inc.',
   },
@@ -255,12 +256,11 @@ export function Footer() {
               &copy; {new Date().getFullYear()} Sovereon Inc. All rights reserved.
               <span className="hidden sm:inline"> | </span>
               <span className="block sm:inline">
-                Website:{' '}
                 <a 
-                  href="https://[PLACEHOLDER_WEBSITE_URL]"
+                  href="https://www.sovereon.online"
                   className="hover:text-primary transition-colors"
                 >
-                  [PLACEHOLDER_WEBSITE_URL]
+                  www.sovereon.online
                 </a>
               </span>
             </p>

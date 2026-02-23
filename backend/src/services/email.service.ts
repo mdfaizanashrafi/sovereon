@@ -85,7 +85,7 @@ The Sovereon AI Team
 ---
 Sovereon Inc.
 AI-Powered Digital Solutions
-partners@sovereon.online | +91 8789109928`
+partners@sovereon.online | +91 9113156083`
     },
     seo: {
       subject: 'Your SEO Inquiry Received | Sovereon Inc.',
@@ -101,7 +101,7 @@ The Sovereon SEO Team
 ---
 Sovereon Inc.
 AI-Powered Digital Solutions
-partners@sovereon.online | +91 8789109928`
+partners@sovereon.online | +91 9113156083`
     },
     development: {
       subject: 'Your Development Project Inquiry | Sovereon Inc.',
@@ -117,7 +117,7 @@ The Sovereon Development Team
 ---
 Sovereon Inc.
 AI-Powered Digital Solutions
-partners@sovereon.online | +91 8789109928`
+partners@sovereon.online | +91 9113156083`
     },
     digital_marketing: {
       subject: 'Digital Marketing Inquiry Received | Sovereon Inc.',
@@ -133,7 +133,7 @@ The Sovereon Marketing Team
 ---
 Sovereon Inc.
 AI-Powered Digital Solutions
-partners@sovereon.online | +91 8789109928`
+partners@sovereon.online | +91 9113156083`
     },
     general: {
       subject: 'Thank You for Contacting Sovereon Inc.',
@@ -150,7 +150,7 @@ The Sovereon Team
 Sovereon Inc.
 AI-Powered Digital Solutions
 Bhagalpur, Bihar, India
-partners@sovereon.online | +91 8789109928`
+partners@sovereon.online | +91 9113156083`
     }
   };
 

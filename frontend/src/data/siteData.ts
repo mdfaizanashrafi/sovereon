@@ -35,14 +35,14 @@ export const companyInfo = {
     full: 'Bhagalpur, Bihar - 812002, India',
   },
   contact: {
-    phone: '8789109928',
+    phone: '9113156083',
     email: 'sovereon@sovereon.online',
-    website: '[PLACEHOLDER_WEBSITE_URL]',
+    website: 'www.sovereon.online',
   },
   social: {
-    instagram: '[PLACEHOLDER_SOCIAL_INSTAGRAM]',
-    linkedin: '[PLACEHOLDER_SOCIAL_LINKEDIN]',
-    facebook: '[PLACEHOLDER_SOCIAL_FACEBOOK]',
+    instagram: 'https://instagram.sovereon.online',
+    linkedin: 'https://linkedin.sovereon.online',
+    facebook: 'https://facebook.sovereon.online',
   },
 };
 
@@ -66,7 +66,7 @@ export const teamMembers = [
     image: '[PLACEHOLDER_TEAM_IMAGE_2]',
   },
   {
-    name: 'Jawed Akhter',
+    name: 'Jawed Akhtar',
     role: 'Project Manager',
     department: 'Project Management',
     description: 'Leads project planning, execution, and delivery to ensure timely and successful project completion.',
@@ -94,14 +94,14 @@ export const teamMembers = [
     image: '[PLACEHOLDER_TEAM_IMAGE_6]',
   },
   {
-    name: 'Danish Khan',
+    name: 'Danish Shamim',
     role: 'Full Stack Developer',
     department: 'Development',
     description: 'Develops end-to-end solutions with expertise in both frontend and backend technologies.',
     image: '[PLACEHOLDER_TEAM_IMAGE_7]',
   },
   {
-    name: 'Ashu Khan',
+    name: 'Shadan Ahmad',
     role: 'Social Media Manager & Video Editor Expert',
     department: 'Digital Marketing',
     description: 'Manages social media presence and creates expert-level video content for engagement.',
@@ -165,6 +165,121 @@ export interface ServiceCategory {
 }
 
 export const serviceCategories: ServiceCategory[] = [
+  {
+    id: 'ai-services',
+    title: 'AI Services',
+    href: '/services/ai-services',
+    description: 'Cutting-edge AI solutions to transform your business with intelligent automation and insights.',
+    services: [
+      {
+        id: 'ai-seo-search',
+        title: 'AI SEO for AI Search',
+        href: '/services/ai-seo-search',
+        shortDescription: 'Optimize your content for AI-powered search engines like ChatGPT, Perplexity, and Google SGE.',
+        fullDescription: 'Stay ahead of the search evolution with our AI SEO services. We optimize your content to rank in AI-powered search engines, answer engines, and conversational AI platforms.',
+        features: [
+          'AI search engine optimization',
+          'Conversational AI visibility',
+          'Featured snippet optimization for AI',
+          'Entity-based SEO strategy',
+          'AI answer engine positioning',
+        ],
+        benefits: [
+          'Appear in ChatGPT/Claude responses',
+          'Higher visibility in AI search',
+          'Future-proof SEO strategy',
+          'Brand authority in AI recommendations',
+        ],
+        strategy: [
+          { step: 1, title: 'AI Search Audit', description: 'Analyze how AI engines currently perceive your brand' },
+          { step: 2, title: 'Content Optimization', description: 'Structure content for AI comprehension and citation' },
+          { step: 3, title: 'Entity Building', description: 'Establish your brand as a recognized authority entity' },
+          { step: 4, title: 'Monitoring & Adaptation', description: 'Track AI search visibility and continuously optimize' },
+        ],
+      },
+      {
+        id: 'personalized-ai-agents',
+        title: 'Personalized AI Agents',
+        href: '/services/personalized-ai-agents',
+        shortDescription: 'Custom AI assistants tailored to your business needs for customer service, sales, and operations.',
+        fullDescription: 'Deploy intelligent AI agents that understand your business, products, and customers. Our custom AI agents handle customer support, qualify leads, schedule appointments, and automate workflows.',
+        features: [
+          'Custom-trained AI models',
+          'Multi-platform deployment (web, WhatsApp, phone)',
+          'CRM & tool integrations',
+          'Human handoff capability',
+          'Continuous learning & improvement',
+        ],
+        benefits: [
+          '24/7 customer support',
+          'Reduced operational costs',
+          'Faster response times',
+          'Consistent brand voice',
+          'Scalable customer interactions',
+        ],
+        strategy: [
+          { step: 1, title: 'Requirements Analysis', description: 'Define use cases, personality, and integration needs' },
+          { step: 2, title: 'Training & Setup', description: 'Train AI on your business data and knowledge base' },
+          { step: 3, title: 'Integration', description: 'Connect with your existing tools and platforms' },
+          { step: 4, title: 'Launch & Optimize', description: 'Deploy and refine based on real interactions' },
+        ],
+      },
+      {
+        id: 'ai-content-generation',
+        title: 'AI Content Generation & Automation',
+        href: '/services/ai-content-generation',
+        shortDescription: 'Scale your content production with AI-powered creation, from blogs to videos to social media.',
+        fullDescription: 'Supercharge your content strategy with AI-generated blogs, social posts, videos, and marketing materials. Our AI content solutions maintain your brand voice while producing high-quality content at scale.',
+        features: [
+          'AI blog & article writing',
+          'Social media content automation',
+          'AI video generation & editing',
+          'Email sequence creation',
+          'Multilingual content production',
+        ],
+        benefits: [
+          '10x content output',
+          'Consistent publishing schedule',
+          'SEO-optimized content',
+          'Reduced content costs',
+          'Faster time-to-market',
+        ],
+        strategy: [
+          { step: 1, title: 'Brand Voice Training', description: 'Train AI on your brand guidelines and tone' },
+          { step: 2, title: 'Content Strategy', description: 'Plan topics, formats, and publishing calendar' },
+          { step: 3, title: 'AI Generation', description: 'Produce content with human oversight and editing' },
+          { step: 4, title: 'Distribution', description: 'Automate publishing across all channels' },
+        ],
+      },
+      {
+        id: 'ai-data-analytics',
+        title: 'AI Data Analytics & Predictive Insights',
+        href: '/services/ai-data-analytics',
+        shortDescription: 'Unlock hidden patterns and predict trends with advanced AI analytics and machine learning.',
+        fullDescription: 'Transform your raw data into actionable intelligence. Our AI analytics services uncover patterns, predict customer behavior, forecast trends, and provide real-time insights that drive smarter business decisions.',
+        features: [
+          'Predictive analytics & forecasting',
+          'Customer behavior analysis',
+          'Anomaly detection',
+          'Real-time dashboards',
+          'Automated reporting & insights',
+        ],
+        benefits: [
+          'Data-driven decision making',
+          'Predict market trends',
+          'Identify growth opportunities',
+          'Risk mitigation',
+          'Competitive intelligence',
+        ],
+        strategy: [
+          { step: 1, title: 'Data Assessment', description: 'Evaluate your data sources and quality' },
+          { step: 2, title: 'Model Development', description: 'Build custom AI models for your specific needs' },
+          { step: 3, title: 'Integration', description: 'Connect analytics to your business systems' },
+          { step: 4, title: 'Insight Delivery', description: 'Deploy dashboards and automated reports' },
+        ],
+      },
+    ],
+  },
   {
     id: 'communication-messaging',
     title: 'Communication & Messaging Services',

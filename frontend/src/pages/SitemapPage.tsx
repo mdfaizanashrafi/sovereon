@@ -31,6 +31,7 @@ const sitemapData = [
     icon: Briefcase,
     links: [
       { label: 'All Services', href: '/services' },
+      { label: 'AI Services', href: '/services/ai-services' },
       { label: 'Communication & Messaging', href: '/services/communication-messaging' },
       { label: 'Software & App Development', href: '/services/software-app-development' },
       { label: 'Maintenance & Support', href: '/services/maintenance-support' },
