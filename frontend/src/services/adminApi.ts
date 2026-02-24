@@ -43,14 +43,47 @@ class AdminApiClient {
       options.body = JSON.stringify(body);
     }
 
-    const response = await fetch(url, options);
-    const data = await response.json();
+    try {
+      const response = await fetch(url, options);
+      
+      // Try to parse JSON
+      let data: ApiResponse<T>;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        return {
+          success: false,
+          error: {
+            code: 'PARSE_ERROR',
+            message: `Failed to parse response: HTTP ${response.status}`,
+          },
+        };
+      }
 
-    if (!response.ok) {
-      throw new Error(data.error?.message || `HTTP ${response.status}`);
+      // Return error response instead of throwing
+      if (!response.ok) {
+        console.warn(`Admin API Warning: ${method} ${url} returned HTTP ${response.status}`, data);
+        return {
+          success: false,
+          error: data.error || {
+            code: 'HTTP_ERROR',
+            message: `Request failed with status ${response.status}`,
+          },
+        };
+      }
+
+      return data;
+    } catch (error) {
+      console.error(`Admin API Error: ${method} ${url}`, error);
+      
+      return {
+        success: false,
+        error: {
+          code: 'NETWORK_ERROR',
+          message: error instanceof Error ? error.message : 'Network request failed',
+        },
+      };
     }
-
-    return data;
   }
 
   // ============================================================================

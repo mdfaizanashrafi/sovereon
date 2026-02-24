@@ -23,6 +23,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AdminProvider } from './contexts/AdminContext';
 import { Layout } from './components/Layout';
 import { HomePage } from './pages/HomePage';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Lazy load main pages
 const ServicesPage = lazy(() => import('./pages/ServicesPage').then(m => ({ default: m.ServicesPage })));
@@ -103,20 +104,24 @@ function App() {
   return (
     <Router>
       <Routes>
-        {/* Admin Routes (with AdminProvider) */}
+        {/* Admin Routes (with AdminProvider and ErrorBoundary) */}
         <Route path="/admin/login" element={
-          <AdminProvider>
-            <Suspense fallback={<PageLoader />}>
-              <AdminLoginPage />
-            </Suspense>
-          </AdminProvider>
+          <ErrorBoundary>
+            <AdminProvider>
+              <Suspense fallback={<PageLoader />}>
+                <AdminLoginPage />
+              </Suspense>
+            </AdminProvider>
+          </ErrorBoundary>
         } />
         <Route path="/admin" element={
-          <AdminProvider>
-            <Suspense fallback={<PageLoader />}>
-              <AdminLayout />
-            </Suspense>
-          </AdminProvider>
+          <ErrorBoundary>
+            <AdminProvider>
+              <Suspense fallback={<PageLoader />}>
+                <AdminLayout />
+              </Suspense>
+            </AdminProvider>
+          </ErrorBoundary>
         }>
           <Route index element={<Suspense fallback={<PageLoader />}><AdminDashboard /></Suspense>} />
           <Route path="team" element={<Suspense fallback={<PageLoader />}><TeamCMS /></Suspense>} />

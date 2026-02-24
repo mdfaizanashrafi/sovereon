@@ -12,6 +12,7 @@ interface ApiResponse<T> {
     code: string;
     message: string;
   };
+  timestamp?: string;
 }
 
 class CmsApiClient {
@@ -25,16 +26,46 @@ class CmsApiClient {
     const url = `${this.baseUrl}${endpoint}`;
     
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
       
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+      // Try to parse JSON even if response is not ok (for error responses)
+      let data: ApiResponse<T>;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        // If JSON parsing fails, create a generic error response
+        return {
+          success: false,
+          error: {
+            code: 'PARSE_ERROR',
+            message: `Failed to parse response: HTTP ${response.status}`,
+          },
+          timestamp: new Date().toISOString(),
+        };
       }
       
-      return await response.json();
+      // Return the response even if not ok (let caller handle errors)
+      if (!response.ok) {
+        console.warn(`API Warning: ${url} returned HTTP ${response.status}`, data);
+      }
+      
+      return data;
     } catch (error) {
       console.error(`API Error: GET ${url}`, error);
-      throw error;
+      
+      // Return a structured error response instead of throwing
+      return {
+        success: false,
+        error: {
+          code: 'NETWORK_ERROR',
+          message: error instanceof Error ? error.message : 'Network request failed',
+        },
+        timestamp: new Date().toISOString(),
+      };
     }
   }
 
@@ -42,7 +73,7 @@ class CmsApiClient {
   // TEAM MEMBERS
   // ============================================================================
 
-  async getTeamMembers() {
+  async getTeamMembers(): Promise<ApiResponse<any[]>> {
     return this.request('/api/public/team-members');
   }
 
@@ -50,7 +81,7 @@ class CmsApiClient {
   // SERVICE CATEGORIES
   // ============================================================================
 
-  async getServiceCategories() {
+  async getServiceCategories(): Promise<ApiResponse<any[]>> {
     return this.request('/api/public/service-categories');
   }
 
@@ -58,7 +89,7 @@ class CmsApiClient {
   // TESTIMONIALS
   // ============================================================================
 
-  async getTestimonials() {
+  async getTestimonials(): Promise<ApiResponse<any[]>> {
     return this.request('/api/public/testimonials');
   }
 
@@ -66,7 +97,7 @@ class CmsApiClient {
   // FAQS
   // ============================================================================
 
-  async getFAQs() {
+  async getFAQs(): Promise<ApiResponse<any[]>> {
     return this.request('/api/public/faqs');
   }
 
@@ -74,7 +105,7 @@ class CmsApiClient {
   // PAGE CONTENT
   // ============================================================================
 
-  async getPageContent(page: string, section: string) {
+  async getPageContent(page: string, section: string): Promise<ApiResponse<any>> {
     return this.request(`/api/public/page-content/${page}/${section}`);
   }
 
@@ -82,7 +113,7 @@ class CmsApiClient {
   // GLOBAL SETTINGS
   // ============================================================================
 
-  async getSettings() {
+  async getSettings(): Promise<ApiResponse<Record<string, string>>> {
     return this.request('/api/public/settings');
   }
 
@@ -90,7 +121,7 @@ class CmsApiClient {
   // CURRENT PROJECTS
   // ============================================================================
 
-  async getCurrentProjects() {
+  async getCurrentProjects(): Promise<ApiResponse<any[]>> {
     return this.request('/api/public/current-projects');
   }
 
@@ -98,11 +129,26 @@ class CmsApiClient {
   // FUTURE QUESTS
   // ============================================================================
 
-  async getFutureQuests() {
+  async getFutureQuests(): Promise<ApiResponse<any[]>> {
     return this.request('/api/public/future-quests');
+  }
+
+  // ============================================================================
+  // CASE STUDIES
+  // ============================================================================
+
+  async getCaseStudies(): Promise<ApiResponse<any[]>> {
+    return this.request('/api/public/case-studies');
+  }
+
+  // ============================================================================
+  // BLOG POSTS
+  // ============================================================================
+
+  async getBlogPosts(): Promise<ApiResponse<any[]>> {
+    return this.request('/api/public/blog-posts');
   }
 }
 
 export const cmsApi = new CmsApiClient();
 export default CmsApiClient;
-// Last updated: Tue, Feb 24, 2026  3:19:15 PM
