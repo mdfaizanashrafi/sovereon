@@ -23,8 +23,54 @@ import contactRoutes from './routes/contact.routes';
 import seedRoutes from './routes/seed.routes';
 import healthRoutes from './routes/health.routes';
 
+// Environment variable validation
+function validateEnv(): string[] {
+  const errors: string[] = [];
+  const required = ['DATABASE_URL', 'SESSION_SECRET'];
+  
+  for (const key of required) {
+    if (!process.env[key]) {
+      errors.push(`Missing required env var: ${key}`);
+    }
+  }
+  
+  // Warn about optional but recommended vars
+  const recommended = ['SMTP_PASSWORD', 'FRONTEND_URL'];
+  for (const key of recommended) {
+    if (!process.env[key]) {
+      console.warn(`[Warning] Optional env var not set: ${key}`);
+    }
+  }
+  
+  return errors;
+}
+
+// Create Express app
 const app: Express = express();
 const PORT = parseInt(process.env.PORT || '5000', 10);
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const IS_PRODUCTION = NODE_ENV === 'production';
+
+// Validate environment before starting
+const envErrors = validateEnv();
+if (envErrors.length > 0) {
+  console.error('[Fatal] Environment validation failed:');
+  envErrors.forEach(e => console.error(`  - ${e}`));
+  if (IS_PRODUCTION) {
+    process.exit(1);
+  }
+}
+
+// Import connect-pg-simple for production session store
+let PgSession: any;
+if (IS_PRODUCTION) {
+  try {
+    const connectPgSimple = require('connect-pg-simple');
+    PgSession = connectPgSimple(session);
+  } catch (e) {
+    console.warn('[Warning] connect-pg-simple not available, using MemoryStore');
+  }
+}
 
 // Middleware
 app.use(cors({
@@ -38,22 +84,52 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// Session middleware for Admin
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-session-secret-change-this',
+// Session configuration
+const sessionConfig: session.SessionOptions = {
+  secret: process.env.SESSION_SECRET || 'development-secret-not-for-production',
   resave: false,
   saveUninitialized: false,
+  name: 'sovereon.sid',
   cookie: {
-    secure: process.env.NODE_ENV === 'production',
+    secure: IS_PRODUCTION,
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: 'lax',
+    sameSite: IS_PRODUCTION ? 'none' : 'lax',
   },
-}));
+};
 
-// Request logging middleware (simple)
+// Use PostgreSQL session store in production
+if (IS_PRODUCTION && PgSession && process.env.DATABASE_URL) {
+  sessionConfig.store = new PgSession({
+    conString: process.env.DATABASE_URL,
+    tableName: 'session',
+    createTableIfMissing: true,
+    pruneSessionInterval: 60 * 15, // Prune expired sessions every 15 minutes
+  });
+  console.log('[Session] Using PostgreSQL session store');
+} else {
+  console.log('[Session] Using MemoryStore (not recommended for production)');
+}
+
+app.use(session(sessionConfig));
+
+// Request logging middleware with response time
 app.use((req: Request, res: Response, next: NextFunction) => {
-  console.log(`${new Date().toISOString()} ${req.method} ${req.path}`);
+  const start = Date.now();
+  const requestId = Math.random().toString(36).substring(7);
+  
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const logLevel = res.statusCode >= 400 ? 'error' : 'info';
+    const message = `[${requestId}] ${req.method} ${req.path} ${res.statusCode} - ${duration}ms`;
+    
+    if (logLevel === 'error') {
+      console.error(message);
+    } else {
+      console.log(message);
+    }
+  });
+  
   next();
 });
 
@@ -64,7 +140,7 @@ app.get('/api', (req: Request, res: Response) => {
     message: 'Sovereon API',
     version: '1.0.0',
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development',
+    environment: NODE_ENV,
     endpoints: {
       health: '/api/health',
       healthDb: '/api/health/db',
@@ -109,21 +185,57 @@ app.use((req: Request, res: Response) => {
 
 // Global error handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error('Error:', err);
+  console.error('[Error]', err);
+  
+  // Don't leak stack traces in production
+  const message = IS_PRODUCTION && err.status === 500 
+    ? 'Internal server error' 
+    : err.message || 'Internal server error';
+  
   res.status(err.status || 500).json({
     success: false,
     error: {
       code: err.code || 'INTERNAL_ERROR',
-      message: err.message || 'Internal server error'
+      message
     }
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
-  console.log(`📝 API docs: http://localhost:${PORT}/api`);
+// Graceful shutdown handling
+const server = app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 Environment: ${NODE_ENV}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
+});
+
+// Handle graceful shutdown
+const gracefulShutdown = (signal: string) => {
+  console.log(`\n${signal} received. Starting graceful shutdown...`);
+  
+  server.close(() => {
+    console.log('HTTP server closed');
+    process.exit(0);
+  });
+  
+  // Force shutdown after 30 seconds
+  setTimeout(() => {
+    console.error('Forced shutdown after timeout');
+    process.exit(1);
+  }, 30000);
+};
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.error('[Fatal] Uncaught exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Fatal] Unhandled rejection at:', promise, 'reason:', reason);
+  process.exit(1);
 });
 
 export default app;
