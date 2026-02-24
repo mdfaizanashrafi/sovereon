@@ -107,16 +107,69 @@ async function runSeeding() {
       { slug: 'content-media-production', title: 'Content & Media Production', description: 'Professional content creation with AI enhancement.', order: 7 },
     ];
 
+    const createdCategories: Record<string, string> = {};
     for (const category of categories) {
-      await prisma.serviceCategory.create({ data: { ...category, isActive: true } });
+      const created = await prisma.serviceCategory.create({ data: { ...category, isActive: true } });
+      createdCategories[category.slug] = created.id;
     }
     results.push(`✓ ${categories.length} service categories created`);
+
+    // ============================================================================
+    // 5. SERVICES (Detailed services under categories)
+    // ============================================================================
+    const services = [
+      // AI Services
+      { slug: 'ai-seo-search', title: 'AI SEO for AI Search', categoryId: createdCategories['ai-services'], shortDescription: 'Optimize your content for AI-powered search engines like ChatGPT, Perplexity, and Google SGE.', fullDescription: 'Stay ahead of the search evolution with our AI SEO services.', features: ['AI search engine optimization', 'Conversational AI visibility'], benefits: ['Appear in ChatGPT responses', 'Higher visibility'], strategy: [{step: 1, title: 'Audit', description: 'Analyze AI perception'}], order: 1 },
+      { slug: 'personalized-ai-agents', title: 'Personalized AI Agents', categoryId: createdCategories['ai-services'], shortDescription: 'Custom AI assistants tailored to your business needs.', fullDescription: 'Deploy intelligent AI agents for customer service and operations.', features: ['Custom-trained models', 'Multi-platform'], benefits: ['24/7 support', 'Reduced costs'], strategy: [{step: 1, title: 'Analysis', description: 'Define use cases'}], order: 2 },
+      { slug: 'ai-content-generation', title: 'AI Content Generation', categoryId: createdCategories['ai-services'], shortDescription: 'Scale content production with AI-powered creation.', fullDescription: 'Supercharge your content strategy with AI-generated materials.', features: ['Blog writing', 'Social automation'], benefits: ['10x content output'], strategy: [{step: 1, title: 'Training', description: 'Train AI on brand'}], order: 3 },
+      { slug: 'ai-data-analytics', title: 'AI Data Analytics', categoryId: createdCategories['ai-services'], shortDescription: 'Unlock hidden patterns with AI analytics.', fullDescription: 'Transform raw data into actionable intelligence.', features: ['Predictive analytics', 'Behavior analysis'], benefits: ['Data-driven decisions'], strategy: [{step: 1, title: 'Assessment', description: 'Evaluate data'}], order: 4 },
+      // Communication
+      { slug: 'broadcast-sms', title: 'Broadcast SMS', categoryId: createdCategories['communication-messaging'], shortDescription: 'Mass messaging for instant customer reach.', fullDescription: 'Send personalized bulk messages with AI targeting.', features: ['AI segmentation', 'Real-time tracking'], benefits: ['98% open rate'], strategy: [{step: 1, title: 'Analysis', description: 'AI targeting'}], order: 5 },
+      { slug: 'bulk-sms', title: 'Bulk SMS', categoryId: createdCategories['communication-messaging'], shortDescription: 'High-volume SMS for business communication.', fullDescription: 'Enterprise-grade bulk SMS service.', features: ['API integration', 'Multi-language'], benefits: ['99.9% uptime'], strategy: [{step: 1, title: 'Setup', description: 'API integration'}], order: 6 },
+      { slug: 'ivr-calling', title: 'IVR Calling', categoryId: createdCategories['communication-messaging'], shortDescription: 'Automated voice calls for promotions.', fullDescription: 'Interactive Voice Response system.', features: ['AI voice synthesis', 'Multi-language'], benefits: ['Human-like quality'], strategy: [{step: 1, title: 'Script', description: 'Design scripts'}], order: 7 },
+      { slug: 'email-sms-marketing', title: 'Email & SMS Marketing', categoryId: createdCategories['communication-messaging'], shortDescription: 'Unified multi-channel marketing.', fullDescription: 'Combine email and SMS for powerful campaigns.', features: ['Cross-channel automation', 'A/B testing'], benefits: ['3x higher engagement'], strategy: [{step: 1, title: 'Strategy', description: 'Channel mix'}], order: 8 },
+      // Software Development
+      { slug: 'website-design-development', title: 'Website Design & Development', categoryId: createdCategories['software-app-development'], shortDescription: 'Stunning websites with AI optimization.', fullDescription: 'Responsive, SEO-friendly websites.', features: ['AI UX optimization', 'Responsive design'], benefits: ['Higher rankings'], strategy: [{step: 1, title: 'Discovery', description: 'Understand goals'}], order: 9 },
+      { slug: 'mobile-app-development', title: 'Mobile App Development', categoryId: createdCategories['software-app-development'], shortDescription: 'Native and cross-platform mobile apps.', fullDescription: 'iOS and Android apps with AI features.', features: ['AI integration', 'Push notifications'], benefits: ['Wider reach'], strategy: [{step: 1, title: 'Analysis', description: 'Define features'}], order: 10 },
+      { slug: 'custom-software-solutions', title: 'Custom Software Solutions', categoryId: createdCategories['software-app-development'], shortDescription: 'Tailored software for unique needs.', fullDescription: 'Bespoke applications for your workflows.', features: ['Process automation', 'AI analytics'], benefits: ['Streamlined operations'], strategy: [{step: 1, title: 'Process Analysis', description: 'Map workflows'}], order: 11 },
+      { slug: 'ui-ux-design', title: 'UI/UX Design', categoryId: createdCategories['software-app-development'], shortDescription: 'User-centered design with AI insights.', fullDescription: 'Intuitive interfaces with AI analysis.', features: ['User research', 'AI heatmaps'], benefits: ['Higher satisfaction'], strategy: [{step: 1, title: 'Research', description: 'Understand users'}], order: 12 },
+      // Maintenance
+      { slug: 'web-app-maintenance', title: 'Web & App Maintenance', categoryId: createdCategories['maintenance-support'], shortDescription: '24/7 monitoring and maintenance.', fullDescription: 'Comprehensive maintenance with AI monitoring.', features: ['AI monitoring', 'Security patches'], benefits: ['99.9% uptime'], strategy: [{step: 1, title: 'Audit', description: 'System health'}], order: 13 },
+      // Cloud & IT
+      { slug: 'cloud-solutions-hosting', title: 'Cloud Solutions & Hosting', categoryId: createdCategories['cloud-it-solutions'], shortDescription: 'Scalable cloud infrastructure.', fullDescription: 'Reliable cloud hosting with auto-scaling.', features: ['Auto-scaling', 'Global CDN'], benefits: ['Handle traffic spikes'], strategy: [{step: 1, title: 'Assessment', description: 'Evaluate needs'}], order: 14 },
+      { slug: 'it-consulting-transformation', title: 'IT Consulting', categoryId: createdCategories['cloud-it-solutions'], shortDescription: 'Strategic IT guidance.', fullDescription: 'Expert consulting for digital transformation.', features: ['IT strategy', 'Transformation roadmap'], benefits: ['Competitive advantage'], strategy: [{step: 1, title: 'Current State', description: 'Analyze IT'}], order: 15 },
+      // Digital Marketing
+      { slug: 'seo', title: 'Search Engine Optimization', categoryId: createdCategories['digital-marketing-seo'], shortDescription: 'Rank higher with AI SEO.', fullDescription: 'AI-driven SEO for top rankings.', features: ['AI keyword research', 'Technical SEO'], benefits: ['Higher rankings'], strategy: [{step: 1, title: 'Audit', description: 'Analyze performance'}], order: 16 },
+      { slug: 'social-media-marketing', title: 'Social Media Marketing', categoryId: createdCategories['digital-marketing-seo'], shortDescription: 'Engage audiences on social platforms.', fullDescription: 'AI-powered social media management.', features: ['AI scheduling', 'Multi-platform'], benefits: ['Increased awareness'], strategy: [{step: 1, title: 'Platform Analysis', description: 'Identify platforms'}], order: 17 },
+      { slug: 'paid-ads', title: 'Paid Ads', categoryId: createdCategories['digital-marketing-seo'], shortDescription: 'Targeted advertising with AI optimization.', fullDescription: 'Data-driven campaigns across platforms.', features: ['AI bid optimization', 'Targeting'], benefits: ['Lower cost per click'], strategy: [{step: 1, title: 'Research', description: 'Define demographics'}], order: 18 },
+      { slug: 'influencer-marketing', title: 'Influencer Marketing', categoryId: createdCategories['digital-marketing-seo'], shortDescription: 'Partner with relevant influencers.', fullDescription: 'Connect with aligned influencers.', features: ['AI matching', 'Campaign management'], benefits: ['Authentic advocacy'], strategy: [{step: 1, title: 'Search', description: 'Find matches'}], order: 19 },
+      { slug: 'lead-generation', title: 'Lead Generation', categoryId: createdCategories['digital-marketing-seo'], shortDescription: 'AI-powered lead generation.', fullDescription: 'Build automated conversion funnels.', features: ['Landing pages', 'Lead scoring'], benefits: ['More qualified leads'], strategy: [{step: 1, title: 'Design', description: 'Map journey'}], order: 20 },
+      // Content & Media
+      { slug: 'podcast-production-only', title: 'Podcast Production', categoryId: createdCategories['content-media-production'], shortDescription: 'Professional podcast recording.', fullDescription: 'End-to-end podcast production.', features: ['Studio recording', 'Professional editing'], benefits: ['Professional quality'], strategy: [{step: 1, title: 'Planning', description: 'Define structure'}], order: 21 },
+      { slug: 'podcast-production-promotion', title: 'Podcast Production & Promotion', categoryId: createdCategories['content-media-production'], shortDescription: 'Full podcast service with marketing.', fullDescription: 'Complete podcast solution.', features: ['Production', 'Distribution'], benefits: ['Wider reach'], strategy: [{step: 1, title: 'Strategy', description: 'Marketing plan'}], order: 22 },
+      { slug: 'online-pr-reputation', title: 'Online PR & Reputation', categoryId: createdCategories['content-media-production'], shortDescription: 'Build and protect brand reputation.', fullDescription: 'Monitor and improve online presence.', features: ['Brand monitoring', 'Review management'], benefits: ['Positive image'], strategy: [{step: 1, title: 'Audit', description: 'Assess reputation'}], order: 23 },
+      { slug: 'ad-shoot', title: 'Ad Shoot', categoryId: createdCategories['content-media-production'], shortDescription: 'Professional video production.', fullDescription: 'High-quality video for commercials.', features: ['4K production', 'Scriptwriting'], benefits: ['Cinematic quality'], strategy: [{step: 1, title: 'Concept', description: 'Creative concept'}], order: 24 },
+      { slug: 'photo-shoot', title: 'Photo Shoot', categoryId: createdCategories['content-media-production'], shortDescription: 'Professional photography.', fullDescription: 'Product, corporate, lifestyle photography.', features: ['Product photography', 'Headshots'], benefits: ['Professional imagery'], strategy: [{step: 1, title: 'Briefing', description: 'Understand needs'}], order: 25 },
+    ];
+
+    for (const service of services) {
+      await prisma.serviceCMS.create({
+        data: {
+          ...service,
+          features: JSON.stringify(service.features),
+          benefits: JSON.stringify(service.benefits),
+          strategy: JSON.stringify(service.strategy),
+          isActive: true,
+        },
+      });
+    }
+    results.push(`✓ ${services.length} services created`);
   } catch (e) {
-    results.push('✗ Service categories failed: ' + (e as Error).message);
+    results.push('✗ Service categories/services failed: ' + (e as Error).message);
   }
 
   // ============================================================================
-  // 5. TESTIMONIALS
+  // 6. TESTIMONIALS
   // ============================================================================
   try {
     await prisma.testimonial.deleteMany({});
@@ -138,7 +191,7 @@ async function runSeeding() {
   }
 
   // ============================================================================
-  // 6. FAQS
+  // 7. FAQS
   // ============================================================================
   try {
     await prisma.fAQ.deleteMany({});
