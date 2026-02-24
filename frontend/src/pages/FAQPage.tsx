@@ -59,7 +59,7 @@ export function FAQPage() {
     return (
       <div className="pt-24 pb-16">
         <div className="container mx-auto px-4 max-w-3xl">
-          <Skeleton className="h-8 w-64 mx-auto mb-4" />
+          <Skeleton className="h-8 w-full max-w-xs mx-auto mb-4" />
           <Skeleton className="h-4 w-full max-w-xl mx-auto mb-8" />
           {[...Array(4)].map((_, i) => (
             <Skeleton key={i} className="h-16 mb-2" />

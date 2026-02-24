@@ -93,7 +93,7 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
     <Link
       to={href}
       onClick={handleClick}
-      className="text-sm text-muted-foreground hover:text-primary transition-colors"
+      className="text-sm text-muted-foreground hover:text-primary transition-colors py-1 inline-block"
     >
       {children}
     </Link>
@@ -233,7 +233,7 @@ export function Footer() {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors group"
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors group py-1"
                 >
                   <social.icon className="w-5 h-5 group-hover:scale-110 transition-transform" />
                   <div className="flex flex-col">

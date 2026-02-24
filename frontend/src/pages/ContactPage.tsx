@@ -235,7 +235,7 @@ export function ContactPage() {
           <div className="space-y-6">
             <Card className="ai-card">
               <CardContent className="p-0 overflow-hidden">
-                <div className="h-64 bg-primary/10 flex items-center justify-center">
+                <div className="h-48 sm:h-64 bg-primary/10 flex items-center justify-center">
                   <div className="text-center">
                     <MapPin className="w-12 h-12 mx-auto mb-2 text-primary/50" />
                     <p className="text-sm text-muted-foreground">[PLACEHOLDER_MAP_EMBED]</p>
