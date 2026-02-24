@@ -96,10 +96,11 @@
 
 ## 🔧 POST-DEPLOYMENT ACTIONS REQUIRED
 
-### 1. Set SMTP_PASSWORD in Render Dashboard
+### 1. Set RESEND_API_KEY in Render Dashboard
 ```
 Go to: Render Dashboard > sovereon-backend > Environment
-Add: SMTP_PASSWORD = <your-zoho-app-password>
+Add: RESEND_API_KEY = re_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Get API key from: https://resend.com/api-keys
 ```
 
 ### 2. Verify Database Seeding
@@ -128,7 +129,7 @@ curl https://sovereon.onrender.com/api/health/email
 
 ## 🚨 KNOWN ISSUES & LIMITATIONS
 
-1. **Email Service**: Will show as unhealthy until SMTP_PASSWORD is set in Render dashboard
+1. **Email Service**: Will show as unhealthy until RESEND_API_KEY is set in Render dashboard
 2. **Session Store**: First deployment may show MemoryStore warning until connect-pg-simple installs
 3. **Migrations**: May show warnings for existing tables (handled by IF NOT EXISTS)
 
@@ -147,8 +148,8 @@ curl https://sovereon.onrender.com/api/health/email
                                │
                                ▼
                         ┌──────────────────┐
-                        │   Zoho Mail      │
-                        │   (SMTP)         │
+                        │   Resend         │
+                        │   (Email API)    │
                         └──────────────────┘
 ```
 
@@ -175,7 +176,7 @@ curl https://sovereon.onrender.com/api/health/email
 ```
 ✅ [Session] Using PostgreSQL session store
 ✅ Database seeding completed
-✅ SMTP connection verified
+✅ Email service connection verified
 ✅ All security checks passed
 ```
 
@@ -183,7 +184,7 @@ curl https://sovereon.onrender.com/api/health/email
 
 ```
 ⚠️ [Session] Using MemoryStore
-⚠️ SMTP_PASSWORD not set
+⚠️ RESEND_API_KEY not set
 ⚠️ Missing optional FRONTEND_URL
 ```
 

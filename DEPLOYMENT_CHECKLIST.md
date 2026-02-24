@@ -12,11 +12,9 @@ Required:
 - [x] `FRONTEND_URL` - Set to `https://sovereon.vercel.app`
 
 Optional (for email functionality):
-- [ ] `SMTP_PASSWORD` - Must be set manually in Render dashboard for contact forms to work
-- [x] `SMTP_HOST` - Defaults to `smtp.zoho.in`
-- [x] `SMTP_PORT` - Defaults to `587`
-- [x] `SMTP_USER` - Defaults to `partners@sovereon.online`
-- [x] `SMTP_FROM` - Defaults to `Sovereon <partners@sovereon.online>`
+- [ ] `RESEND_API_KEY` - Must be set manually in Render dashboard for contact forms to work
+- [x] `FROM_EMAIL` - Defaults to `Sovereon <partners@sovereon.online>`
+- [x] `ADMIN_EMAIL` - Defaults to `partners@sovereon.online`
 
 ### GitHub Secrets
 
@@ -38,8 +36,8 @@ Required for CI/CD:
    - Expected: All checks show `"status": "ok"`
 
 3. **Email Health**: `GET https://sovereon.onrender.com/api/health/email`
-   - Expected if SMTP configured: All checks show `"status": "ok"`
-   - Expected if SMTP not configured: `"status": "error"` for config
+   - Expected if Resend configured: All checks show `"status": "ok"`
+   - Expected if Resend not configured: `"status": "error"` for config
 
 ### API Endpoints
 
@@ -70,7 +68,7 @@ Required for CI/CD:
 
 ### Functionality Tests
 
-10. **Contact Form** (if SMTP configured):
+10. **Contact Form** (if Resend configured):
     - Submit form on contact page
     - Data saved to database
     - Email notification sent to admin

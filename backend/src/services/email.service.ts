@@ -1,47 +1,19 @@
 /**
  * Email Service
- * Handles admin notifications and intelligent auto-replies
+ * Handles admin notifications and intelligent auto-replies via Resend API
  */
 
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-// SMTP Configuration from environment
-/*
-const SMTP_CONFIG = {
-  host: process.env.SMTP_HOST || 'smtp.zoho.in',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.SMTP_USER || 'partners@sovereon.online',
-    pass: process.env.SMTP_PASSWORD || '',
-  },
-  // Connection settings
-  pool: false,
-  connectionTimeout: 15000,
-  greetingTimeout: 15000,
-  socketTimeout: 15000,
-};*/
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587');
+// Resend API Key from environment
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 
-const SMTP_CONFIG = {
-  host: process.env.SMTP_HOST || 'smtp.zoho.in',
-  port: SMTP_PORT,
-  secure: SMTP_PORT === 465, // ✅ auto true if 465
-  auth: {
-    user: process.env.SMTP_USER || 'partners@sovereon.online',
-    pass: process.env.SMTP_PASSWORD || '',
-  },
-  pool: false,
-  connectionTimeout: 15000,
-  greetingTimeout: 15000,
-  socketTimeout: 15000,
-};
+// Email addresses
+const FROM_EMAIL = process.env.FROM_EMAIL || 'Sovereon <partners@sovereon.online>';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'partners@sovereon.online';
 
-const FROM_EMAIL = process.env.SMTP_FROM || 'Sovereon <partners@sovereon.online>';
-const ADMIN_EMAIL = process.env.SMTP_USER || 'partners@sovereon.online';
-
-// Create transporter
-const transporter = nodemailer.createTransport(SMTP_CONFIG);
+// Initialize Resend client
+const resend = new Resend(RESEND_API_KEY);
 
 // Track email health status
 let emailHealthStatus: { 
@@ -66,16 +38,8 @@ interface CategoryResponse {
 export function validateEmailConfig(): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
   
-  if (!process.env.SMTP_PASSWORD) {
-    errors.push('SMTP_PASSWORD not set - contact forms will fail');
-  }
-  
-  if (!process.env.SMTP_HOST) {
-    console.warn('[Email] SMTP_HOST not set, using default: smtp.zoho.in');
-  }
-  
-  if (!process.env.SMTP_USER) {
-    console.warn('[Email] SMTP_USER not set, using default: partners@sovereon.online');
+  if (!process.env.RESEND_API_KEY) {
+    errors.push('RESEND_API_KEY not set - contact forms will fail');
   }
   
   return { valid: errors.length === 0, errors };
@@ -316,13 +280,17 @@ ${submission.message}
 Submitted At: ${submission.createdAt.toISOString()}
       `.trim();
 
-      await transporter.sendMail({
+      const { error } = await resend.emails.send({
         from: FROM_EMAIL,
         to: ADMIN_EMAIL,
         subject,
         text,
         html,
       });
+
+      if (error) {
+        throw new Error(error.message);
+      }
 
       console.log(`[Email] Admin notification sent for ${submission.formType} from ${submission.email}`);
       return true;
@@ -365,7 +333,7 @@ export async function sendIntelligentAutoReply(
       const category = categorizeInquiry(message, service);
       const reply = generateAutoReply(category);
 
-      await transporter.sendMail({
+      const { error } = await resend.emails.send({
         from: FROM_EMAIL,
         to: userEmail,
         subject: reply.subject,
@@ -400,6 +368,10 @@ export async function sendIntelligentAutoReply(
         `,
       });
 
+      if (error) {
+        throw new Error(error.message);
+      }
+
       console.log(`[Email] Auto-reply sent to ${userEmail} (category: ${category})`);
       return true;
     } catch (error) {
@@ -432,27 +404,36 @@ function escapeHtml(text: string): string {
 }
 
 /**
- * Verify SMTP connection and update health status
+ * Verify Resend API connection and update health status
  */
 export async function verifyEmailService(): Promise<boolean> {
   try {
-    // Check if SMTP_PASSWORD is set
-    if (!process.env.SMTP_PASSWORD) {
+    // Check if RESEND_API_KEY is set
+    if (!process.env.RESEND_API_KEY) {
       emailHealthStatus = {
         lastCheck: new Date(),
         isHealthy: false,
-        error: 'SMTP_PASSWORD not configured'
+        error: 'RESEND_API_KEY not configured'
       };
-      console.error('[Email] SMTP_PASSWORD not set - cannot verify connection');
+      console.error('[Email] RESEND_API_KEY not set - cannot verify connection');
       return false;
     }
 
-    await transporter.verify();
+    // Perform a lightweight test by sending to admin email
+    // We'll use a test that doesn't actually send an email
+    // Resend doesn't have a native "verify" method, so we do a dry-run check
+    // by validating the API key through a domains list call or similar
+    const { data, error } = await resend.apiKeys.list();
+    
+    if (error) {
+      throw new Error(error.message);
+    }
+
     emailHealthStatus = {
       lastCheck: new Date(),
       isHealthy: true
     };
-    console.log('[Email] SMTP connection verified');
+    console.log('[Email] Resend API connection verified');
     return true;
   } catch (error) {
     emailHealthStatus = {
@@ -460,7 +441,7 @@ export async function verifyEmailService(): Promise<boolean> {
       isHealthy: false,
       error: (error as Error).message
     };
-    console.error('[Email] SMTP verification failed:', (error as Error).message);
+    console.error('[Email] Resend API verification failed:', (error as Error).message);
     return false;
   }
 }

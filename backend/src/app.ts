@@ -37,7 +37,7 @@ function validateEnv(): string[] {
   }
   
   // Warn about optional but recommended vars
-  const recommended = ['SMTP_PASSWORD', 'FRONTEND_URL'];
+  const recommended = ['RESEND_API_KEY', 'FRONTEND_URL'];
   for (const key of recommended) {
     if (!process.env[key]) {
       console.warn(`[Warning] Optional env var not set: ${key}`);

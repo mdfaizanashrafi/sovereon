@@ -22,17 +22,13 @@ services:
       # Admin Session Secret (Required for admin panel login)
       - key: SESSION_SECRET
         generateValue: true
-      # Email Configuration (Required for contact form)
-      - key: SMTP_HOST
-        value: smtp.zoho.in
-      - key: SMTP_PORT
-        value: 587
-      - key: SMTP_USER
-        value: partners@sovereon.online
-      - key: SMTP_PASSWORD
+      # Email Configuration (Resend API - Required for contact form)
+      - key: RESEND_API_KEY
         sync: false  # Set this manually in Render dashboard
-      - key: SMTP_FROM
+      - key: FROM_EMAIL
         value: Sovereon <partners@sovereon.online>
+      - key: ADMIN_EMAIL
+        value: partners@sovereon.online
       # CORS Configuration
       - key: FRONTEND_URL
         value: https://sovereon.vercel.app

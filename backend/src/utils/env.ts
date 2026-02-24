@@ -15,11 +15,10 @@ const REQUIRED_VARS = [
 ];
 
 const RECOMMENDED_VARS = [
-  { key: 'SMTP_PASSWORD', purpose: 'Contact form email notifications' },
+  { key: 'RESEND_API_KEY', purpose: 'Contact form email notifications via Resend' },
+  { key: 'FROM_EMAIL', purpose: 'Email from address (defaults to partners@sovereon.online)' },
+  { key: 'ADMIN_EMAIL', purpose: 'Admin notification recipient (defaults to partners@sovereon.online)' },
   { key: 'FRONTEND_URL', purpose: 'CORS configuration' },
-  { key: 'SMTP_HOST', purpose: 'Email service (defaults to smtp.zoho.in)' },
-  { key: 'SMTP_PORT', purpose: 'Email service (defaults to 587)' },
-  { key: 'SMTP_USER', purpose: 'Email service (defaults to partners@sovereon.online)' },
 ];
 
 /**

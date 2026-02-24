@@ -81,7 +81,7 @@ router.get(
 );
 
 /**
- * Email health check - verifies SMTP configuration
+ * Email health check - verifies Resend API configuration
  */
 router.get(
   '/health/email',
@@ -94,13 +94,13 @@ router.get(
       config: {
         status: configCheck.valid ? 'ok' : 'error',
         message: configCheck.valid 
-          ? 'SMTP configuration valid' 
+          ? 'Email configuration valid' 
           : configCheck.errors.join(', ')
       },
       connection: {
         status: isConnected ? 'ok' : 'error',
         message: isConnected 
-          ? 'SMTP connection verified' 
+          ? 'Email service connection verified' 
           : (health.error || 'Connection failed')
       }
     };
