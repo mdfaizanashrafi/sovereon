@@ -6,6 +6,7 @@
 import express, { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { asyncHandler } from '../middleware/auth';
+import { verifyEmailService, getEmailHealth, validateEmailConfig } from '../services/email.service';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -75,6 +76,42 @@ router.get(
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV || 'development',
       checks,
+    });
+  })
+);
+
+/**
+ * Email health check - verifies SMTP configuration
+ */
+router.get(
+  '/health/email',
+  asyncHandler(async (_req: Request, res: Response) => {
+    const configCheck = validateEmailConfig();
+    const isConnected = await verifyEmailService();
+    const health = getEmailHealth();
+    
+    const checks: Record<string, { status: 'ok' | 'error' | 'warning'; message: string }> = {
+      config: {
+        status: configCheck.valid ? 'ok' : 'error',
+        message: configCheck.valid 
+          ? 'SMTP configuration valid' 
+          : configCheck.errors.join(', ')
+      },
+      connection: {
+        status: isConnected ? 'ok' : 'error',
+        message: isConnected 
+          ? 'SMTP connection verified' 
+          : (health.error || 'Connection failed')
+      }
+    };
+    
+    const allOk = Object.values(checks).every(c => c.status === 'ok');
+    
+    res.status(allOk ? 200 : 503).json({
+      success: allOk,
+      timestamp: new Date().toISOString(),
+      checks,
+      lastCheck: health.lastCheck,
     });
   })
 );

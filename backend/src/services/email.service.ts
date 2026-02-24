@@ -14,13 +14,26 @@ const SMTP_CONFIG = {
     user: process.env.SMTP_USER || 'partners@sovereon.online',
     pass: process.env.SMTP_PASSWORD || '',
   },
+  // Connection settings for reliability
+  pool: true, // Use pooled connections
+  maxConnections: 5,
+  maxMessages: 100,
+  rateDelta: 1000,
+  rateLimit: 5,
 };
 
 const FROM_EMAIL = process.env.SMTP_FROM || 'Sovereon <partners@sovereon.online>';
-const ADMIN_EMAIL = 'partners@sovereon.online';
+const ADMIN_EMAIL = process.env.SMTP_USER || 'partners@sovereon.online';
 
 // Create transporter
 const transporter = nodemailer.createTransport(SMTP_CONFIG);
+
+// Track email health status
+let emailHealthStatus: { 
+  lastCheck: Date | null; 
+  isHealthy: boolean; 
+  error?: string;
+} = { lastCheck: null, isHealthy: false };
 
 /**
  * Email categories for intelligent auto-reply
@@ -30,6 +43,34 @@ type InquiryCategory = 'ai_automation' | 'seo' | 'development' | 'digital_market
 interface CategoryResponse {
   subject: string;
   body: string;
+}
+
+/**
+ * Validate email configuration
+ */
+export function validateEmailConfig(): { valid: boolean; errors: string[] } {
+  const errors: string[] = [];
+  
+  if (!process.env.SMTP_PASSWORD) {
+    errors.push('SMTP_PASSWORD not set - contact forms will fail');
+  }
+  
+  if (!process.env.SMTP_HOST) {
+    console.warn('[Email] SMTP_HOST not set, using default: smtp.zoho.in');
+  }
+  
+  if (!process.env.SMTP_USER) {
+    console.warn('[Email] SMTP_USER not set, using default: partners@sovereon.online');
+  }
+  
+  return { valid: errors.length === 0, errors };
+}
+
+/**
+ * Get email service health status
+ */
+export function getEmailHealth(): typeof emailHealthStatus {
+  return emailHealthStatus;
 }
 
 /**
@@ -158,7 +199,7 @@ partners@sovereon.online | +91 9113156083`
 }
 
 /**
- * Send admin notification email
+ * Send admin notification email with retry logic
  */
 export async function sendAdminNotification(
   submission: {
@@ -172,10 +213,21 @@ export async function sendAdminNotification(
     createdAt: Date;
   }
 ): Promise<boolean> {
-  try {
-    const subject = `New ${submission.formType === 'consultation' ? 'AI Consultation' : 'Contact Form'} Submission from ${submission.name}`;
-    
-    const html = `
+  // Validate config first
+  const configCheck = validateEmailConfig();
+  if (!configCheck.valid) {
+    console.error('[Email] Cannot send notification:', configCheck.errors.join(', '));
+    return false;
+  }
+
+  const maxRetries = 3;
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const subject = `New ${submission.formType === 'consultation' ? 'AI Consultation' : 'Contact Form'} Submission from ${submission.name}`;
+      
+      const html = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -235,9 +287,9 @@ export async function sendAdminNotification(
   </div>
 </body>
 </html>
-    `;
+      `;
 
-    const text = `
+      const text = `
 New ${submission.formType === 'consultation' ? 'AI Consultation' : 'Contact Form'} Submission
 
 Name: ${submission.name}
@@ -247,26 +299,35 @@ Message:
 ${submission.message}
 
 Submitted At: ${submission.createdAt.toISOString()}
-    `.trim();
+      `.trim();
 
-    await transporter.sendMail({
-      from: FROM_EMAIL,
-      to: ADMIN_EMAIL,
-      subject,
-      text,
-      html,
-    });
+      await transporter.sendMail({
+        from: FROM_EMAIL,
+        to: ADMIN_EMAIL,
+        subject,
+        text,
+        html,
+      });
 
-    console.log(`[Email] Admin notification sent for ${submission.formType} from ${submission.email}`);
-    return true;
-  } catch (error) {
-    console.error('[Email] Failed to send admin notification:', error);
-    return false;
+      console.log(`[Email] Admin notification sent for ${submission.formType} from ${submission.email}`);
+      return true;
+    } catch (error) {
+      lastError = error as Error;
+      console.error(`[Email] Admin notification attempt ${attempt}/${maxRetries} failed:`, (error as Error).message);
+      
+      if (attempt < maxRetries) {
+        // Exponential backoff: 1s, 2s, 4s
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt - 1) * 1000));
+      }
+    }
   }
+
+  console.error('[Email] All admin notification retries failed:', lastError?.message);
+  return false;
 }
 
 /**
- * Send intelligent auto-reply to the user
+ * Send intelligent auto-reply to the user with retry logic
  */
 export async function sendIntelligentAutoReply(
   userEmail: string,
@@ -274,16 +335,27 @@ export async function sendIntelligentAutoReply(
   message: string,
   service?: string | null
 ): Promise<boolean> {
-  try {
-    const category = categorizeInquiry(message, service);
-    const reply = generateAutoReply(category);
+  // Validate config first
+  const configCheck = validateEmailConfig();
+  if (!configCheck.valid) {
+    console.error('[Email] Cannot send auto-reply:', configCheck.errors.join(', '));
+    return false;
+  }
 
-    await transporter.sendMail({
-      from: FROM_EMAIL,
-      to: userEmail,
-      subject: reply.subject,
-      text: `Dear ${userName},\n\n${reply.body}`,
-      html: `
+  const maxRetries = 3;
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const category = categorizeInquiry(message, service);
+      const reply = generateAutoReply(category);
+
+      await transporter.sendMail({
+        from: FROM_EMAIL,
+        to: userEmail,
+        subject: reply.subject,
+        text: `Dear ${userName},\n\n${reply.body}`,
+        html: `
 <!DOCTYPE html>
 <html>
 <head>
@@ -310,15 +382,23 @@ export async function sendIntelligentAutoReply(
   </div>
 </body>
 </html>
-      `,
-    });
+        `,
+      });
 
-    console.log(`[Email] Auto-reply sent to ${userEmail} (category: ${category})`);
-    return true;
-  } catch (error) {
-    console.error('[Email] Failed to send auto-reply:', error);
-    return false;
+      console.log(`[Email] Auto-reply sent to ${userEmail} (category: ${category})`);
+      return true;
+    } catch (error) {
+      lastError = error as Error;
+      console.error(`[Email] Auto-reply attempt ${attempt}/${maxRetries} failed:`, (error as Error).message);
+      
+      if (attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt - 1) * 1000));
+      }
+    }
   }
+
+  console.error('[Email] All auto-reply retries failed:', lastError?.message);
+  return false;
 }
 
 /**
@@ -337,15 +417,38 @@ function escapeHtml(text: string): string {
 }
 
 /**
- * Verify SMTP connection
+ * Verify SMTP connection and update health status
  */
 export async function verifyEmailService(): Promise<boolean> {
   try {
+    // Check if SMTP_PASSWORD is set
+    if (!process.env.SMTP_PASSWORD) {
+      emailHealthStatus = {
+        lastCheck: new Date(),
+        isHealthy: false,
+        error: 'SMTP_PASSWORD not configured'
+      };
+      console.error('[Email] SMTP_PASSWORD not set - cannot verify connection');
+      return false;
+    }
+
     await transporter.verify();
+    emailHealthStatus = {
+      lastCheck: new Date(),
+      isHealthy: true
+    };
     console.log('[Email] SMTP connection verified');
     return true;
   } catch (error) {
-    console.error('[Email] SMTP verification failed:', error);
+    emailHealthStatus = {
+      lastCheck: new Date(),
+      isHealthy: false,
+      error: (error as Error).message
+    };
+    console.error('[Email] SMTP verification failed:', (error as Error).message);
     return false;
   }
 }
+
+// Initial verification on module load (don't block)
+verifyEmailService().catch(() => {});

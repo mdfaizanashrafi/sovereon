@@ -144,6 +144,7 @@ app.get('/api', (req: Request, res: Response) => {
     endpoints: {
       health: '/api/health',
       healthDb: '/api/health/db',
+      healthEmail: '/api/health/email',
       public: '/api/public/*',
       admin: '/api/admin/*',
       contact: '/api/contact',
