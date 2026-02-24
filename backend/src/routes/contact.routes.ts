@@ -61,7 +61,19 @@ router.post(
   contactFormLimiter,
   asyncHandler(async (req: Request, res: Response) => {
     // Validate input
-    const validatedData = contactFormSchema.parse(req.body);
+    const result = contactFormSchema.safeParse(req.body);
+
+    if (!result.success) {
+      return res.status(400).json(
+        formatResponse(false, null, {
+          code: "VALIDATION_ERROR",
+          message: result.error.errors.map(e => e.message).join(", "),
+        })
+      );
+    }
+
+    const validatedData = result.data;
+
 
     // Honeypot check - silently reject bots with fake success
     if (isBotRequest(validatedData.company_website)) {
@@ -133,7 +145,18 @@ router.post(
   consultationFormLimiter,
   asyncHandler(async (req: Request, res: Response) => {
     // Validate input
-    const validatedData = consultationFormSchema.parse(req.body);
+    const result = consultationFormSchema.safeParse(req.body);
+
+    if (!result.success) {
+      return res.status(400).json(
+        formatResponse(false, null, {
+          code: "VALIDATION_ERROR",
+          message: result.error.errors.map(e => e.message).join(", "),
+        })
+      );
+    }
+
+    const validatedData = result.data;
 
     // Honeypot check - silently reject bots with fake success
     if (isBotRequest(validatedData.company_website)) {
