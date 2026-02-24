@@ -16,7 +16,11 @@ export const securityHeaders = helmet({
       styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for shadcn/ui
       scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", process.env.FRONTEND_URL || 'http://localhost:5173'],
+      connectSrc: [
+        "'self'",
+        process.env.FRONTEND_URL || 'http://localhost:5173',
+        process.env.API_URL || 'https://api.sovereon.online'
+      ],
       fontSrc: ["'self'"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
