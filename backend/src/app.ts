@@ -3,6 +3,8 @@ import cors from 'cors';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import 'dotenv/config';
+import { securityHeaders, additionalSecurityHeaders, sanitizeInput, apiRateLimiter } from './middleware/security';
+import { logSecurityAudit } from './utils/security';
 
 // Extend session to include adminId
 declare module 'express-session' {
@@ -51,6 +53,15 @@ const PORT = parseInt(process.env.PORT || '5000', 10);
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const IS_PRODUCTION = NODE_ENV === 'production';
 
+// Trust proxy (required for rate limiting behind reverse proxy)
+if (IS_PRODUCTION) {
+  app.set('trust proxy', 1);
+}
+
+// Apply security headers
+app.use(securityHeaders);
+app.use(additionalSecurityHeaders);
+
 // Validate environment before starting
 const envErrors = validateEnv();
 if (envErrors.length > 0) {
@@ -60,6 +71,9 @@ if (envErrors.length > 0) {
     process.exit(1);
   }
 }
+
+// Run security audit
+logSecurityAudit();
 
 // Import connect-pg-simple for production session store
 let PgSession: any;
@@ -80,9 +94,13 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
+app.use(sanitizeInput);
+
+// Apply general API rate limiting
+app.use('/api/', apiRateLimiter);
 
 // Session configuration
 const sessionConfig: session.SessionOptions = {
