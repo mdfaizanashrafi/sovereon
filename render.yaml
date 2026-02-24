@@ -32,6 +32,9 @@ services:
       # CORS Configuration
       - key: FRONTEND_URL
         value: https://sovereon.vercel.app
+      # CSP Configuration (API domain for connectSrc)
+      - key: API_URL
+        value: https://api.sovereon.online
       # Logging
       - key: LOG_LEVEL
         value: info

@@ -89,6 +89,7 @@ if (IS_PRODUCTION) {
 // CORS configuration - allow multiple origins
 const allowedOrigins = [
   process.env.FRONTEND_URL,
+  process.env.API_URL,
   'https://sovereon.vercel.app',
   'https://www.sovereon.online',
   'https://sovereon.online',

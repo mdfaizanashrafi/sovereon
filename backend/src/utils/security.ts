@@ -136,6 +136,13 @@ export function runSecurityAudit(): SecurityAuditResult {
     message: process.env.FRONTEND_URL ? `CORS origin: ${process.env.FRONTEND_URL}` : 'FRONTEND_URL not set (using default)',
   });
   
+  // Check API_URL for CSP connectSrc
+  checks.push({
+    name: 'API URL (CSP)',
+    passed: !!process.env.API_URL,
+    message: process.env.API_URL ? `API URL: ${process.env.API_URL}` : 'API_URL not set (using fallback)',
+  });
+  
   // Check database URL uses SSL in production
   const dbUrl = process.env.DATABASE_URL || '';
   checks.push({
