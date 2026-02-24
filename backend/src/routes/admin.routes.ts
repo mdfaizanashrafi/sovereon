@@ -5,10 +5,28 @@
 
 import express, { Request, Response } from 'express';
 import { z } from 'zod';
+import rateLimit from 'express-rate-limit';
 import { adminAuthMiddleware, adminLogin, checkAdminSession } from '../middleware/adminAuth';
 import { asyncHandler } from '../middleware/auth';
 import { formatResponse, AppError } from '../utils/errors';
 import * as cmsService from '../services/cms.service';
+
+// Rate limiter for admin login - stricter than public endpoints
+const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // 10 attempts per window
+  message: {
+    success: false,
+    error: {
+      code: 'RATE_LIMIT_EXCEEDED',
+      message: 'Too many login attempts. Please try again after 15 minutes.'
+    },
+    timestamp: new Date().toISOString()
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true, // Don't count successful logins
+});
 
 const router = express.Router();
 
@@ -22,13 +40,15 @@ const loginSchema = z.object({
 // AUTHENTICATION
 // ============================================================================
 
-// Login
+// Login (with rate limiting)
 router.post(
   '/auth/login',
+  adminLoginLimiter,
   asyncHandler(async (req: Request, res: Response) => {
     const { username, password } = loginSchema.parse(req.body);
+    const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
 
-    const admin = await adminLogin(username, password);
+    const admin = await adminLogin(username, password, clientIp);
 
     if (!admin) {
       throw new AppError('INVALID_CREDENTIALS', 'Invalid username or password', 401);
@@ -45,7 +65,11 @@ router.post(
 router.post(
   '/auth/logout',
   asyncHandler(async (req: Request, res: Response) => {
-    req.session.destroy(() => {});
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('[Session] Logout error:', err);
+      }
+    });
     res.json(formatResponse(true, { message: 'Logged out successfully' }));
   })
 );
@@ -63,7 +87,10 @@ router.get(
     const admin = await checkAdminSession(adminId);
 
     if (!admin) {
-      req.session.destroy(() => {});
+      // Admin no longer exists, destroy session
+      req.session.destroy((err) => {
+        if (err) console.error('[Session] Failed to destroy session:', err);
+      });
       return res.json(formatResponse(true, null));
     }
 

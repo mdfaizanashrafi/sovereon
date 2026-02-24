@@ -5,6 +5,10 @@
 
 import rateLimit from 'express-rate-limit';
 
+// Trust proxy configuration for accurate IP detection
+// This should be set in the main app, but we document it here:
+// app.set('trust proxy', 1); // trust first proxy
+
 /**
  * Rate limiter for contact form submissions
  * Limit: 5 submissions per IP per 10 minutes
