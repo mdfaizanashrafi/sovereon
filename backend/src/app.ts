@@ -21,6 +21,7 @@ import adminRoutes from './routes/admin.routes';
 import publicRoutes from './routes/public.routes';
 import contactRoutes from './routes/contact.routes';
 import seedRoutes from './routes/seed.routes';
+import healthRoutes from './routes/health.routes';
 
 const app: Express = express();
 const PORT = parseInt(process.env.PORT || '5000', 10);
@@ -66,6 +67,7 @@ app.get('/api', (req: Request, res: Response) => {
     environment: process.env.NODE_ENV || 'development',
     endpoints: {
       health: '/api/health',
+      healthDb: '/api/health/db',
       public: '/api/public/*',
       admin: '/api/admin/*',
       contact: '/api/contact',
@@ -79,14 +81,8 @@ app.get('/api', (req: Request, res: Response) => {
   });
 });
 
-// Health check endpoint
-app.get('/api/health', (req: Request, res: Response) => {
-  res.json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV 
-  });
-});
+// Health check routes (must be before other routes)
+app.use('/api', healthRoutes);
 
 // Routes
 app.use('/api/users', userRoutes);
