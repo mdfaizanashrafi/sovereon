@@ -14,12 +14,6 @@ const SMTP_CONFIG = {
     user: process.env.SMTP_USER || 'partners@sovereon.online',
     pass: process.env.SMTP_PASSWORD || '',
   },
-  // TLS settings for Render compatibility
-  tls: {
-    ciphers: 'SSLv3',
-    minVersion: 'TLSv1.2',
-  },
-  requireTLS: true,
   // Connection settings
   pool: false,
   connectionTimeout: 15000,
