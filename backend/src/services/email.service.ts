@@ -14,12 +14,17 @@ const SMTP_CONFIG = {
     user: process.env.SMTP_USER || 'partners@sovereon.online',
     pass: process.env.SMTP_PASSWORD || '',
   },
-  // Connection settings for reliability
+  // TLS settings for Render compatibility
+  tls: {
+    ciphers: 'SSLv3',
+    minVersion: 'TLSv1.2',
+  },
+  requireTLS: true,
+  // Connection settings
   pool: false,
-  // Timeout settings
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
+  connectionTimeout: 15000,
+  greetingTimeout: 15000,
+  socketTimeout: 15000,
 };
 
 const FROM_EMAIL = process.env.SMTP_FROM || 'Sovereon <partners@sovereon.online>';
