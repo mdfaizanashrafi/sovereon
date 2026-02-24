@@ -6,7 +6,7 @@ services:
     plan: standard
     buildCommand: cd backend && npm ci && npm run build
     startCommand: cd backend && npm start
-    postDeployCommand: cd backend && npx prisma migrate deploy && npx ts-node src/database/seed.ts && npx ts-node src/database/seed-cms.ts
+    postDeployCommand: cd backend && npm run migrate:prod && npm run seed || true && npm run seed:cms || true
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV

@@ -1,0 +1,3 @@
+[migration]
+name = "20250224150000_initial_schema"
+hash = "baseline_migration_for_production"
