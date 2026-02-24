@@ -764,6 +764,7 @@ function FutureQuestsSection() {
 function ContactFormSection() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [formData, setFormData] = useState({
     name: '',
@@ -796,6 +797,7 @@ function ContactFormSection() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/consultation`, {
@@ -808,11 +810,13 @@ function ContactFormSection() {
 
       if (response.ok) {
         setIsSubmitted(true);
+        setError(null);
       } else {
-        console.error('Form submission failed');
+        const data = await response.json().catch(() => ({ error: { message: 'Submission failed. Please try again.' } }));
+        setError(data.error?.message || 'Submission failed. Please try again.');
       }
     } catch (error) {
-      console.error('Failed to submit form:', error);
+      setError('Network error. Please check your connection and try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -846,6 +850,11 @@ function ContactFormSection() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {error && (
+                    <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md text-destructive text-sm">
+                      {error}
+                    </div>
+                  )}
                   {/* Honeypot field - hidden from humans */}
                   <div style={{ display: 'none' }}>
                     <label htmlFor="company_website">Company Website</label>

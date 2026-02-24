@@ -183,6 +183,7 @@ app.get('/api', (req: Request, res: Response) => {
       public: '/api/public/*',
       admin: '/api/admin/*',
       contact: '/api/contact',
+      consultation: '/api/consultation',
       users: '/api/users',
       services: '/api/services',
       orders: '/api/orders',
