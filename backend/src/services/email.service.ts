@@ -6,6 +6,7 @@
 import nodemailer from 'nodemailer';
 
 // SMTP Configuration from environment
+/*
 const SMTP_CONFIG = {
   host: process.env.SMTP_HOST || 'smtp.zoho.in',
   port: parseInt(process.env.SMTP_PORT || '587'),
@@ -15,6 +16,21 @@ const SMTP_CONFIG = {
     pass: process.env.SMTP_PASSWORD || '',
   },
   // Connection settings
+  pool: false,
+  connectionTimeout: 15000,
+  greetingTimeout: 15000,
+  socketTimeout: 15000,
+};*/
+const SMTP_PORT = parseInt(process.env.SMTP_PORT || '587');
+
+const SMTP_CONFIG = {
+  host: process.env.SMTP_HOST || 'smtp.zoho.in',
+  port: SMTP_PORT,
+  secure: SMTP_PORT === 465, // ✅ auto true if 465
+  auth: {
+    user: process.env.SMTP_USER || 'partners@sovereon.online',
+    pass: process.env.SMTP_PASSWORD || '',
+  },
   pool: false,
   connectionTimeout: 15000,
   greetingTimeout: 15000,
