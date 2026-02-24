@@ -6,6 +6,7 @@ on:
     paths:
       - 'backend/**'
       - '.github/workflows/deploy-backend.yml'
+      - 'render.yaml'
 
 jobs:
   deploy:
@@ -13,7 +14,21 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: cd backend && npm ci
+      
+      - name: Run TypeScript check
+        run: cd backend && npx tsc --noEmit
+      
       - name: Deploy to Render
         run: |
-          curl -X POST https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}
+          echo "Triggering Render deployment..."
+          response=$(curl -s -X POST \
+            "https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }}?key=${{ secrets.RENDER_API_KEY }}")
+          echo "Deploy response: $response"
         continue-on-error: true

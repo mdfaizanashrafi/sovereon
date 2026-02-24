@@ -3,15 +3,20 @@
   "version": "1.0.0",
   "description": "Sovereon Inc. Backend API",
   "main": "dist/app.js",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
     "build": "tsc",
-    "start": "npx prisma migrate deploy && node dist/app.js",
+    "start": "node dist/app.js",
+    "start:with-migrate": "npx prisma migrate deploy && npx prisma generate && node dist/app.js",
     "migrate": "prisma migrate dev",
     "migrate:prod": "prisma migrate deploy",
     "generate": "prisma generate",
     "seed": "ts-node src/database/seed.ts",
-    "seed:cms": "ts-node src/database/seed-cms.ts"
+    "seed:cms": "ts-node src/database/seed-cms.ts",
+    "postinstall": "prisma generate"
   },
   "keywords": [],
   "author": "Sovereon Inc.",

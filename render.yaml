@@ -4,10 +4,12 @@ services:
     runtime: node
     region: oregon
     plan: standard
+    autoDeploy: true
     buildCommand: cd backend && npm ci && npm run build
-    startCommand: cd backend && npm start
-    postDeployCommand: cd backend && npm run migrate:prod && npm run seed || true && npm run seed:cms || true
+    startCommand: cd backend && npm run start:with-migrate
     healthCheckPath: /api/health
+    numInstances: 1
+    env: node
     envVars:
       - key: NODE_ENV
         value: production
