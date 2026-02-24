@@ -44,9 +44,10 @@ export function WhoWeArePage() {
           setTeamMembers((teamRes.data as TeamMember[]) || []);
         }
 
-        if (settingsRes.success) {
+        if (settingsRes.success && settingsRes.data) {
           const settingsMap: Record<string, string> = {};
-          (settingsRes.data as GlobalSetting[] || []).forEach((s) => {
+          const settingsArray = (settingsRes.data as unknown as GlobalSetting[]) || [];
+          settingsArray.forEach((s) => {
             settingsMap[s.key] = s.value;
           });
           setSettings(settingsMap);

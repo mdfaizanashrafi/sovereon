@@ -3,7 +3,7 @@
  * Catches React errors and displays fallback UI
  */
 
-import React, { Component, ReactNode } from 'react';
+import React, { Component, type ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
