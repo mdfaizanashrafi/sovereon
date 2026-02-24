@@ -20,6 +20,7 @@ import paymentRoutes from './routes/payments.routes';
 import adminRoutes from './routes/admin.routes';
 import publicRoutes from './routes/public.routes';
 import contactRoutes from './routes/contact.routes';
+import seedRoutes from './routes/seed.routes';
 
 const app: Express = express();
 const PORT = parseInt(process.env.PORT || '5000', 10);
@@ -97,6 +98,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api', contactRoutes);
+app.use('/api', seedRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
