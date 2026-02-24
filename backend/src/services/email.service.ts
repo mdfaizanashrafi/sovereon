@@ -6,22 +6,18 @@
 import nodemailer from 'nodemailer';
 
 // SMTP Configuration from environment
-// Use port 465 with SSL for better reliability on Render
-const SMTP_PORT = parseInt(process.env.SMTP_PORT || '465');
-const USE_SSL = SMTP_PORT === 465;
-
 const SMTP_CONFIG = {
   host: process.env.SMTP_HOST || 'smtp.zoho.in',
-  port: SMTP_PORT,
-  secure: USE_SSL, // true for 465, false for 587
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false, // true for 465, false for other ports
   auth: {
     user: process.env.SMTP_USER || 'partners@sovereon.online',
     pass: process.env.SMTP_PASSWORD || '',
   },
   // Connection settings for reliability
-  pool: false, // Disable pooling for Render compatibility
+  pool: false,
   // Timeout settings
-  connectionTimeout: 10000, // 10 seconds
+  connectionTimeout: 10000,
   greetingTimeout: 10000,
   socketTimeout: 10000,
 };
