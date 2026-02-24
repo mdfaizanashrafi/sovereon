@@ -1,6 +1,7 @@
 *.md
 !README.md
 !DEPLOYMENT_CHECKLIST.md
+!SYSTEM_STATUS.md
 
 *.txt
 
