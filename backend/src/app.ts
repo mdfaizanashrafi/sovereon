@@ -55,6 +55,29 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// Root API endpoint - API info
+app.get('/api', (req: Request, res: Response) => {
+  res.json({
+    success: true,
+    message: 'Sovereon API',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    endpoints: {
+      health: '/api/health',
+      public: '/api/public/*',
+      admin: '/api/admin/*',
+      contact: '/api/contact',
+      users: '/api/users',
+      services: '/api/services',
+      orders: '/api/orders',
+      invoices: '/api/invoices',
+      subscriptions: '/api/subscriptions',
+      payments: '/api/payments'
+    }
+  });
+});
+
 // Health check endpoint
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({ 
