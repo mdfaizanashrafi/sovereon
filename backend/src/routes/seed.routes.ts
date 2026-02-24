@@ -244,4 +244,52 @@ const handleSeedRequest = asyncHandler(async (req: Request, res: Response) => {
 router.post('/seed', handleSeedRequest);
 router.get('/seed', handleSeedRequest);
 
+/**
+ * Create new admin user with custom password
+ * POST /api/create-admin
+ * Body: { secret: string, username: string, password: string }
+ */
+router.post(
+  '/create-admin',
+  asyncHandler(async (req: Request, res: Response) => {
+    const { secret, username, password } = req.body;
+
+    if (secret !== SEED_SECRET) {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'UNAUTHORIZED', message: 'Invalid secret' }
+      });
+    }
+
+    if (!username || !password) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Username and password required' }
+      });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_ERROR', message: 'Password must be at least 8 characters' }
+      });
+    }
+
+    const hashedPassword = await bcryptjs.hash(password, 12);
+    
+    const admin = await prisma.adminUser.upsert({
+      where: { username },
+      update: { password: hashedPassword },
+      create: { username, password: hashedPassword },
+    });
+
+    res.json({
+      success: true,
+      message: `Admin user '${username}' created/updated successfully`,
+      adminId: admin.id,
+      timestamp: new Date().toISOString()
+    });
+  })
+);
+
 export default router;
