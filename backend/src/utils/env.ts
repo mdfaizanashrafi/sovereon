@@ -70,7 +70,7 @@ export function validateEnvironment(): EnvValidationResult {
 /**
  * Log environment status
  */
-export function logEnvironmentStatus(): void {
+export function logEnvironmentStatus(): boolean {
   const result = validateEnvironment();
   
   console.log('\n📋 Environment Validation:');
