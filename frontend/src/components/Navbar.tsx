@@ -100,7 +100,7 @@ export function Navbar() {
               asChild
               className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all"
             >
-              <Link to="/pricing">Get Started</Link>
+              <Link to="/contact-us">Book a Strategy Call</Link>
             </Button>
           </div>
 
@@ -143,7 +143,7 @@ export function Navbar() {
             {/* Mobile CTA */}
             <div className="mt-4 pt-4 border-t border-border">
               <Button asChild className="w-full">
-                <Link to="/pricing">Get Started</Link>
+                <Link to="/contact-us">Book a Strategy Call</Link>
               </Button>
             </div>
           </div>

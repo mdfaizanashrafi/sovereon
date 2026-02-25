@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/accordion';
 import { cmsApi } from '@/services/cmsApi';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SEO, buildFAQSchema } from '@/components/SEO';
 
 interface FAQ {
   id: string;
@@ -70,16 +71,23 @@ export function FAQPage() {
   }
 
   return (
+    <>
+      <SEO
+        title="Frequently Asked Questions"
+        description="Common questions about our software development, AI services, and digital marketing. Based in Bhagalpur, serving clients across India."
+        canonical="/faq"
+        schema={buildFAQSchema(faqs.map(f => ({ question: f.question, answer: f.answer })))}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
           <Badge className="badge-ai mb-4">FAQ</Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Frequently Asked <span className="text-gradient">Questions</span>
+            Common <span className="text-gradient">Questions</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Find answers to common questions about our services and process
+            Straight answers about timelines, pricing, process, and what to expect when working with us.
           </p>
         </div>
 
@@ -107,5 +115,6 @@ export function FAQPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

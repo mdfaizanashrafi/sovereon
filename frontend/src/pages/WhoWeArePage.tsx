@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Brain, MapPin, Calendar, Users, Target, Lightbulb } from 'lucide-react';
 import { cmsApi } from '@/services/cmsApi';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SEO, buildLocalBusinessSchema } from '@/components/SEO';
 
 interface TeamMember {
   id: string;
@@ -79,17 +80,24 @@ export function WhoWeArePage() {
   }
 
   return (
+    <>
+      <SEO
+        title="Who We Are"
+        description="Sovereon Inc. was founded in 2026 by engineers who believe technology should drive revenue. Based in Bhagalpur, Bihar."
+        canonical="/who-we-are"
+        schema={buildLocalBusinessSchema()}
+      />
     <div className="pt-24 pb-16">
       {/* Hero Section */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-16">
         <div className="max-w-3xl mx-auto text-center">
-          <Badge className="badge-ai mb-4">About Us</Badge>
+          <Badge className="badge-ai mb-4">Our Story</Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Who <span className="text-gradient">We Are</span>
+            Engineers Who <span className="text-gradient">Understand Business</span>
           </h1>
           <p className="text-lg text-muted-foreground">
-            {companyName} is a forward-thinking digital solutions company based in 
-            Bhagalpur, Bihar, leveraging AI technology to help businesses grow.
+            {companyName} was founded in February 2026 because we saw too many technical projects 
+            that looked good but did not move the revenue needle. We fix that.
           </p>
         </div>
       </section>
@@ -98,23 +106,22 @@ export function WhoWeArePage() {
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-16">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <h2 className="text-3xl font-bold mb-6">Our Story</h2>
+            <h2 className="text-3xl font-bold mb-6">Why We Exist</h2>
             <div className="space-y-4 text-muted-foreground">
               <p>
-                Founded in February 2026, {companyName} emerged from a vision to bring 
-                world-class digital solutions to businesses in Bihar and beyond. We recognized 
-                that local businesses needed access to cutting-edge technology and AI-powered 
-                strategies to compete in an increasingly digital marketplace.
+                {companyName} started with a simple observation: too many businesses were spending 
+                money on technology and marketing without seeing real returns. Fancy dashboards, 
+                vanity metrics, but no revenue impact.
               </p>
               <p>
-                Our name, &quot;Sovereon,&quot; reflects our commitment to sovereignty in the digital 
-                space — empowering businesses to take control of their online presence and 
-                achieve independence through technology.
+                We built Sovereon to fix this. Our approach is simple: every line of code, every 
+                marketing campaign, every AI system we deploy must either reduce costs or increase 
+                revenue. If it does not do one of those two things, we do not build it.
               </p>
               <p>
-                Led by Md Faizan (Technical Lead) and Altamash Khan (CRM Manager), our team 
-                combines technical expertise with exceptional customer service to deliver 
-                results that matter.
+                Led by Md Faizan (Technical Lead) and Altamash Khan (CRM Manager), we are a team 
+                of engineers, analysts, and creators who believe technology is only valuable 
+                when it solves real business problems.
               </p>
             </div>
           </div>
@@ -159,9 +166,8 @@ export function WhoWeArePage() {
               <Brain className="w-10 h-10 text-primary mb-4" />
               <h2 className="text-2xl font-bold mb-4">Our Mission</h2>
               <p className="text-muted-foreground">
-                To democratize access to advanced digital technology for businesses of all sizes, 
-                enabling them to compete effectively in the global marketplace through AI-powered 
-                solutions and exceptional service.
+                Build technology that actually works for business. No fluff, no vanity metrics. 
+                Just systems that reduce costs, increase revenue, or both.
               </p>
             </CardContent>
           </Card>
@@ -170,9 +176,9 @@ export function WhoWeArePage() {
               <Target className="w-10 h-10 text-primary mb-4" />
               <h2 className="text-2xl font-bold mb-4">Our Vision</h2>
               <p className="text-muted-foreground">
-                To become the leading digital transformation partner for businesses in Eastern 
-                India, known for innovation, reliability, and measurable results that drive 
-                sustainable growth.
+                Become the go-to technical partner for businesses in Eastern India that want 
+                results, not just deliverables. Known for shipping on time and building systems 
+                that make money.
               </p>
             </CardContent>
           </Card>
@@ -182,8 +188,8 @@ export function WhoWeArePage() {
       {/* Team Section */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-16">
         <div className="text-center mb-12">
-          <Badge className="badge-ai mb-4">Our Team</Badge>
-          <h2 className="text-3xl font-bold">Meet the Leaders</h2>
+          <Badge className="badge-ai mb-4">The Team</Badge>
+          <h2 className="text-3xl font-bold">People Behind the Code</h2>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
@@ -238,5 +244,6 @@ export function WhoWeArePage() {
         </Card>
       </section>
     </div>
+    </>
   );
 }

@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Home, Briefcase, Users, FileText } from 'lucide-react';
+import { SEO } from '@/components/SEO';
 
 const sitemapData = [
   {
@@ -62,16 +63,23 @@ const sitemapData = [
 
 export function SitemapPage() {
   return (
+    <>
+      <SEO
+        title="Sitemap"
+        description="Complete overview of all pages on Sovereon Inc. website. Find services, resources, and company information."
+        canonical="/sitemap"
+        noindex={true}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <Badge className="badge-ai mb-4">Navigation</Badge>
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="text-gradient">Sitemap</span>
+              Website <span className="text-gradient">Sitemap</span>
             </h1>
             <p className="text-muted-foreground">
-              Find your way around our website. All pages at a glance.
+              Complete directory of all pages on our website.
             </p>
           </div>
 
@@ -102,5 +110,6 @@ export function SitemapPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

@@ -19,20 +19,27 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, TrendingUp, Building2, CheckCircle } from 'lucide-react';
 import { caseStudies } from '@/data/siteData';
+import { SEO } from '@/components/SEO';
 
 export function CaseStudiesPage() {
   return (
+    <>
+      <SEO
+        title="Case Studies"
+        description="See how we have helped businesses across India grow revenue, reduce costs, and scale operations with custom software and AI systems."
+        canonical="/case-studies"
+      />
     <div className="pt-24 pb-16">
       {/* Hero Section */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-16">
         <div className="max-w-3xl mx-auto text-center">
-          <Badge className="badge-ai mb-4">Success Stories</Badge>
+          <Badge className="badge-ai mb-4">Proven Results</Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Client <span className="text-gradient">Case Studies</span>
+            Case <span className="text-gradient">Studies</span>
           </h1>
           <p className="text-lg text-muted-foreground">
-            Real results from real businesses. See how we've helped 
-            companies across industries achieve their goals.
+            Real projects, real outcomes. Every case study includes actual metrics 
+            and the specific challenges we solved.
           </p>
         </div>
       </section>
@@ -95,18 +102,19 @@ export function CaseStudiesPage() {
           <CardContent className="p-8 md:p-12 text-center">
             <TrendingUp className="w-12 h-12 mx-auto mb-4 text-primary" />
             <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              Want Results Like These?
+              Ready for Similar Results?
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto mb-6">
-              Let's discuss how we can help your business achieve similar success.
+              Book a free strategy call. We will analyze your situation and give you an honest assessment of what is possible.
             </p>
             <a href="/contact-us" className="btn-ai inline-flex items-center px-6 py-3 rounded-lg font-medium">
-              Start Your Project
+              Book a Strategy Call
               <ArrowRight className="w-4 h-4 ml-2" />
             </a>
           </CardContent>
         </Card>
       </section>
     </div>
+    </>
   );
 }

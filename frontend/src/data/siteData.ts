@@ -24,7 +24,7 @@
 
 export const companyInfo = {
   name: 'Sovereon Inc.',
-  tagline: 'AI-Powered Digital Solutions',
+  tagline: 'Built by engineers. Designed for growth.',
   establishmentDate: 'February 2026',
   address: {
     street: '',
@@ -169,14 +169,14 @@ export const serviceCategories: ServiceCategory[] = [
     id: 'ai-services',
     title: 'AI Services',
     href: '/services/ai-services',
-    description: 'Cutting-edge AI solutions to transform your business with intelligent automation and insights.',
+    description: 'AI systems that handle real work: automation, analytics, and customer engagement that drives revenue.',
     services: [
       {
         id: 'ai-seo-search',
         title: 'AI SEO for AI Search',
         href: '/services/ai-seo-search',
         shortDescription: 'Optimize your content for AI-powered search engines like ChatGPT, Perplexity, and Google SGE.',
-        fullDescription: 'Stay ahead of the search evolution with our AI SEO services. We optimize your content to rank in AI-powered search engines, answer engines, and conversational AI platforms.',
+        fullDescription: 'Your customers are asking ChatGPT and Perplexity for recommendations. We make sure your business shows up in those answers. Our AI search optimization puts your brand where people actually look today.',
         features: [
           'AI search engine optimization',
           'Conversational AI visibility',
@@ -202,7 +202,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'Personalized AI Agents',
         href: '/services/personalized-ai-agents',
         shortDescription: 'Custom AI assistants tailored to your business needs for customer service, sales, and operations.',
-        fullDescription: 'Deploy intelligent AI agents that understand your business, products, and customers. Our custom AI agents handle customer support, qualify leads, schedule appointments, and automate workflows.',
+        fullDescription: 'Custom AI assistants trained on your business. They handle support questions, qualify leads, book appointments, and escalate to your team when needed. Available 24/7 across web, WhatsApp, and voice.',
         features: [
           'Custom-trained AI models',
           'Multi-platform deployment (web, WhatsApp, phone)',
@@ -229,7 +229,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'AI Content Generation & Automation',
         href: '/services/ai-content-generation',
         shortDescription: 'Scale your content production with AI-powered creation, from blogs to videos to social media.',
-        fullDescription: 'Supercharge your content strategy with AI-generated blogs, social posts, videos, and marketing materials. Our AI content solutions maintain your brand voice while producing high-quality content at scale.',
+        fullDescription: 'Publish 10x more content without hiring 10x more writers. Our AI content systems produce blogs, social posts, and marketing copy in your brand voice, with human oversight for quality.',
         features: [
           'AI blog & article writing',
           'Social media content automation',
@@ -256,7 +256,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'AI Data Analytics & Predictive Insights',
         href: '/services/ai-data-analytics',
         shortDescription: 'Unlock hidden patterns and predict trends with advanced AI analytics and machine learning.',
-        fullDescription: 'Transform your raw data into actionable intelligence. Our AI analytics services uncover patterns, predict customer behavior, forecast trends, and provide real-time insights that drive smarter business decisions.',
+        fullDescription: 'Stop guessing. Our analytics systems analyze your customer data to predict behavior, spot trends, and identify revenue opportunities before your competitors do.',
         features: [
           'Predictive analytics & forecasting',
           'Customer behavior analysis',
@@ -284,14 +284,14 @@ export const serviceCategories: ServiceCategory[] = [
     id: 'communication-messaging',
     title: 'Communication & Messaging Services',
     href: '/services/communication-messaging',
-    description: 'Reach your audience instantly with AI-powered messaging solutions.',
+    description: 'Direct messaging that reaches customers where they are. SMS, voice, and email systems that actually get opened.',
     services: [
       {
         id: 'broadcast-sms',
         title: 'Broadcast SMS',
         href: '/services/broadcast-sms',
         shortDescription: 'Mass messaging for instant customer reach.',
-        fullDescription: 'Send personalized bulk messages to thousands instantly with AI-driven targeting and delivery optimization.',
+        fullDescription: 'Send targeted SMS campaigns that reach thousands instantly. 98% open rates. Smart delivery timing. Real-time tracking.',
         features: [
           'AI-powered audience segmentation',
           'Real-time delivery tracking',
@@ -317,7 +317,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'Bulk SMS',
         href: '/services/bulk-sms',
         shortDescription: 'High-volume SMS for business communication.',
-        fullDescription: 'Enterprise-grade bulk SMS service with API integration, delivery reports, and intelligent routing.',
+        fullDescription: 'High-volume SMS infrastructure with API access, delivery confirmation, and compliance management. Built for scale.',
         features: [
           'API integration support',
           'Multi-language messaging',
@@ -343,7 +343,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'IVR Calling for Offers',
         href: '/services/ivr-calling',
         shortDescription: 'Automated voice calls for promotions.',
-        fullDescription: 'Interactive Voice Response system for automated promotional calls with AI-powered speech recognition.',
+        fullDescription: 'Automated voice campaigns that sound human. Promotional calls, confirmations, and surveys delivered at scale with natural AI voices.',
         features: [
           'AI voice synthesis',
           'Multi-language support',
@@ -369,7 +369,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'Email & SMS Marketing',
         href: '/services/email-sms-marketing',
         shortDescription: 'Unified multi-channel marketing campaigns.',
-        fullDescription: 'Combine email and SMS for powerful multi-channel campaigns with AI-optimized timing and content.',
+        fullDescription: 'Coordinate email and SMS into unified campaigns. Right message, right channel, right time. Higher engagement, better ROI.',
         features: [
           'Cross-channel automation',
           'AI-powered send-time optimization',
@@ -396,14 +396,14 @@ export const serviceCategories: ServiceCategory[] = [
     id: 'software-app-development',
     title: 'Software & App Development',
     href: '/services/software-app-development',
-    description: 'Custom software solutions built with cutting-edge AI technology.',
+    description: 'Software built for your specific business needs. Web, mobile, and custom applications that solve real problems.',
     services: [
       {
         id: 'website-design-development',
         title: 'Website Design and Development',
         href: '/services/website-design-development',
         shortDescription: 'Stunning websites with AI optimization.',
-        fullDescription: 'Responsive, SEO-friendly websites built with modern frameworks and AI-powered performance optimization.',
+        fullDescription: 'Fast, responsive websites that rank. Built with modern frameworks, optimized for Core Web Vitals, and designed to convert visitors into customers.',
         features: [
           'AI-driven UX optimization',
           'Responsive design',
@@ -429,7 +429,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'Mobile App Development',
         href: '/services/mobile-app-development',
         shortDescription: 'Native and cross-platform mobile apps.',
-        fullDescription: 'iOS and Android apps with AI features, push notifications, and seamless user experiences.',
+        fullDescription: 'Native and cross-platform mobile apps that users actually keep installed. Clean design, fast performance, and features that drive engagement.',
         features: [
           'iOS & Android development',
           'AI integration',
@@ -455,7 +455,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'Custom Software Solutions',
         href: '/services/custom-software-solutions',
         shortDescription: 'Tailored software for unique business needs.',
-        fullDescription: 'Bespoke software applications designed specifically for your business processes and workflows.',
+        fullDescription: 'Off-the-shelf software never fits perfectly. We build custom applications tailored to your exact workflows, integrations, and reporting needs.',
         features: [
           'Business process automation',
           'AI-powered analytics',
@@ -481,7 +481,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'UI/UX Design & Prototyping',
         href: '/services/ui-ux-design',
         shortDescription: 'User-centered design with AI insights.',
-        fullDescription: 'Create intuitive interfaces with AI-powered user behavior analysis and rapid prototyping.',
+        fullDescription: 'Interfaces that feel obvious to users. We research, prototype, and test designs before writing production code. Result: higher satisfaction, fewer support tickets.',
         features: [
           'User research & testing',
           'AI heatmap analysis',
@@ -508,14 +508,14 @@ export const serviceCategories: ServiceCategory[] = [
     id: 'maintenance-support',
     title: 'Maintenance & Support',
     href: '/services/maintenance-support',
-    description: 'Keep your digital assets running smoothly 24/7.',
+    description: 'Your systems stay online, secure, and fast. We handle the technical maintenance so you focus on business.',
     services: [
       {
         id: 'web-app-maintenance',
         title: 'Web & App Maintenance & Support',
         href: '/services/web-app-maintenance',
         shortDescription: '24/7 monitoring and maintenance.',
-        fullDescription: 'Comprehensive maintenance services with AI monitoring, security updates, and performance optimization.',
+        fullDescription: '24/7 monitoring, automated backups, security patches, and performance tuning. When issues arise, we fix them before you even notice.',
         features: [
           '24/7 AI monitoring',
           'Security patches',
@@ -542,14 +542,14 @@ export const serviceCategories: ServiceCategory[] = [
     id: 'cloud-it-solutions',
     title: 'Cloud & IT Solutions',
     href: '/services/cloud-it-solutions',
-    description: 'Scalable cloud infrastructure and digital transformation.',
+    description: 'Cloud infrastructure that scales with your business. Migration, hosting, and consulting by certified experts.',
     services: [
       {
         id: 'cloud-solutions-hosting',
         title: 'Cloud Solutions & Hosting',
         href: '/services/cloud-solutions-hosting',
         shortDescription: 'Scalable cloud infrastructure.',
-        fullDescription: 'Reliable cloud hosting with auto-scaling, CDN, and AI-powered resource optimization.',
+        fullDescription: 'Enterprise cloud hosting on AWS, Google Cloud, or Azure. Auto-scaling for traffic spikes, global CDN for speed, and 99.99% uptime SLA.',
         features: [
           'Auto-scaling infrastructure',
           'Global CDN',
@@ -575,7 +575,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'IT Consulting & Digital Transformation',
         href: '/services/it-consulting-transformation',
         shortDescription: 'Strategic IT guidance and transformation.',
-        fullDescription: 'Expert consulting to modernize your IT infrastructure and drive digital transformation.',
+        fullDescription: 'Strategic technology consulting to modernize legacy systems, select the right tech stack, and execute digital transformation without disrupting operations.',
         features: [
           'IT strategy development',
           'Digital transformation roadmap',
@@ -602,14 +602,14 @@ export const serviceCategories: ServiceCategory[] = [
     id: 'digital-marketing-seo',
     title: 'Digital Marketing & SEO',
     href: '/services/digital-marketing-seo',
-    description: 'AI-powered marketing strategies for maximum ROI.',
+    description: 'Marketing that measures revenue, not vanity metrics. Data-driven campaigns that bring qualified leads.',
     services: [
       {
         id: 'seo',
         title: 'Search Engine Optimization',
         href: '/services/seo',
         shortDescription: 'Rank higher with AI SEO.',
-        fullDescription: 'AI-driven SEO strategies for top search rankings, increased organic traffic, and better visibility.',
+        fullDescription: 'Technical SEO, content optimization, and authority building. We focus on rankings that drive revenue, not just traffic that bounces.',
         features: [
           'AI keyword research',
           'On-page optimization',
@@ -635,7 +635,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'Social Media Marketing & Management',
         href: '/services/social-media-marketing',
         shortDescription: 'Engage audiences on social platforms.',
-        fullDescription: 'AI-powered social media management for increased engagement, followers, and brand awareness.',
+        fullDescription: 'Social media management that builds real community. Content creation, posting schedules, and engagement that turns followers into customers.',
         features: [
           'AI content scheduling',
           'Multi-platform management',
@@ -661,7 +661,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'Paid Ads (Google, Meta, LinkedIn)',
         href: '/services/paid-ads',
         shortDescription: 'Targeted advertising with AI optimization.',
-        fullDescription: 'Data-driven paid advertising campaigns across Google, Facebook, Instagram, and LinkedIn.',
+        fullDescription: 'Performance marketing across Google Ads, Meta, and LinkedIn. We optimize for cost per acquisition and return on ad spend, not clicks.',
         features: [
           'AI bid optimization',
           'Audience targeting',
@@ -687,7 +687,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'Influencer Marketing',
         href: '/services/influencer-marketing',
         shortDescription: 'Partner with relevant influencers.',
-        fullDescription: 'Connect with influencers who align with your brand for authentic marketing campaigns.',
+        fullDescription: 'Find and partner with influencers who genuinely connect with your audience. Authentic endorsements that drive trust and sales.',
         features: [
           'AI influencer matching',
           'Campaign management',
@@ -713,7 +713,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'Lead Generation & Conversion Funnels',
         href: '/services/lead-generation',
         shortDescription: 'AI-powered lead generation systems.',
-        fullDescription: 'Build automated funnels that attract, nurture, and convert leads into customers.',
+        fullDescription: 'Complete lead generation systems. Landing pages, lead magnets, nurture sequences, and sales handoff. Predictable pipeline growth.',
         features: [
           'Landing page creation',
           'Email automation',
@@ -740,14 +740,14 @@ export const serviceCategories: ServiceCategory[] = [
     id: 'content-media-production',
     title: 'Content & Media Production',
     href: '/services/content-media-production',
-    description: 'Professional content creation with AI enhancement.',
+    description: 'Studio-quality content production. Podcasts, photography, and video that elevates your brand.',
     services: [
       {
         id: 'podcast-production-only',
         title: 'Podcast Production Only',
         href: '/services/podcast-production-only',
         shortDescription: 'Professional podcast recording and editing.',
-        fullDescription: 'End-to-end podcast production including recording, editing, and audio enhancement.',
+        fullDescription: 'Professional podcast production from recording to final edit. Studio quality sound, show notes, and distribution-ready files.',
         features: [
           'Studio-quality recording',
           'Professional editing',
@@ -773,7 +773,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'Podcast Production & Promotion',
         href: '/services/podcast-production-promotion',
         shortDescription: 'Full podcast service with marketing.',
-        fullDescription: 'Complete podcast solution including production, distribution, and promotional marketing.',
+        fullDescription: 'Full podcast service: production, distribution to all major platforms, and marketing to grow your listener base.',
         features: [
           'Full production service',
           'Distribution to platforms',
@@ -799,7 +799,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'Online PR & Reputation Management',
         href: '/services/online-pr-reputation',
         shortDescription: 'Build and protect brand reputation.',
-        fullDescription: 'Monitor, manage, and improve your online presence and brand reputation.',
+        fullDescription: 'Protect and enhance your brand reputation. Review management, crisis response, and positive content strategies.',
         features: [
           'Brand monitoring',
           'Review management',
@@ -825,7 +825,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'Ad Shoot',
         href: '/services/ad-shoot',
         shortDescription: 'Professional advertisement video production.',
-        fullDescription: 'High-quality video production for TV commercials, online ads, and promotional content.',
+        fullDescription: 'Professional video production for advertisements. Script to screen, 4K quality, and delivery in all formats you need.',
         features: [
           '4K video production',
           'Scriptwriting',
@@ -851,7 +851,7 @@ export const serviceCategories: ServiceCategory[] = [
         title: 'Photo Shoot',
         href: '/services/photo-shoot',
         shortDescription: 'Professional photography services.',
-        fullDescription: 'Stunning product, corporate, and lifestyle photography for your brand.',
+        fullDescription: 'Commercial photography that sells. Product shots, corporate portraits, and lifestyle imagery for marketing and advertising.',
         features: [
           'Product photography',
           'Corporate headshots',
@@ -898,7 +898,7 @@ export const testimonials: Testimonial[] = [
     name: 'Rajesh Kumar',
     company: 'Bihar Tech Solutions',
     role: 'CEO',
-    content: 'Sovereon transformed our digital presence completely. Their AI-powered SEO strategy increased our organic traffic by 150% in just 3 months.',
+    content: 'Our organic traffic jumped 150% in three months. The team understood our market and delivered results, not just reports.',
     rating: 5,
     avatar: '[PLACEHOLDER_TESTIMONIAL_AVATAR_1]',
     beforeMetric: '500 monthly visitors',
@@ -909,7 +909,7 @@ export const testimonials: Testimonial[] = [
     name: 'Priya Sharma',
     company: 'Wellness Hub',
     role: 'Founder',
-    content: 'The team at Sovereon is exceptional. Their 24/7 support and ROI-focused approach helped us achieve a 40% increase in online sales.',
+    content: 'Online sales up 40%. What impressed me most was their responsiveness. Any issue, any time, they were on it.',
     rating: 5,
     avatar: '[PLACEHOLDER_TESTIMONIAL_AVATAR_2]',
     beforeMetric: '2% conversion rate',
@@ -920,7 +920,7 @@ export const testimonials: Testimonial[] = [
     name: 'Amit Patel',
     company: 'Patel Enterprises',
     role: 'Director',
-    content: 'Working with Md Faizan and the technical team was a game-changer. Our custom software solution streamlined operations by 60%.',
+    content: 'Md Faizan and his team built us custom software that cut our manual work by 60%. Real engineers who understand business.',
     rating: 5,
     avatar: '[PLACEHOLDER_TESTIMONIAL_AVATAR_3]',
     beforeMetric: '10 hours/day manual work',
@@ -931,7 +931,7 @@ export const testimonials: Testimonial[] = [
     name: 'Sneha Gupta',
     company: 'Fashion Forward',
     role: 'Marketing Head',
-    content: 'Their social media marketing expertise is unmatched. We gained 50K followers in 6 months with their AI-driven content strategy.',
+    content: '50,000 new followers in six months. But more importantly, engagement that actually drives traffic to our store.',
     rating: 5,
     avatar: '[PLACEHOLDER_TESTIMONIAL_AVATAR_4]',
     beforeMetric: '5K followers',
@@ -942,7 +942,7 @@ export const testimonials: Testimonial[] = [
     name: 'Vikram Singh',
     company: 'Singh Constructions',
     role: 'Owner',
-    content: 'Altamash Khan and the CRM team provided outstanding support. Our customer satisfaction scores improved dramatically.',
+    content: 'Customer satisfaction went from 72% to 94%. Altamash and the team rebuilt our entire customer experience.',
     rating: 5,
     avatar: '[PLACEHOLDER_TESTIMONIAL_AVATAR_5]',
     beforeMetric: '72% satisfaction',
@@ -953,7 +953,7 @@ export const testimonials: Testimonial[] = [
     name: 'Neha Verma',
     company: 'EduLearn Platform',
     role: 'Co-founder',
-    content: 'The mobile app they developed exceeded our expectations. User engagement increased by 200% within the first quarter.',
+    content: 'User engagement tripled after launch. The app is fast, intuitive, and our users actually love using it.',
     rating: 5,
     avatar: '[PLACEHOLDER_TESTIMONIAL_AVATAR_6]',
     beforeMetric: '1,000 daily active users',
@@ -982,8 +982,8 @@ export const caseStudies: CaseStudy[] = [
     title: 'E-commerce Transformation',
     client: 'Bihar Mart',
     industry: 'Retail',
-    challenge: 'Struggling with low online visibility and poor conversion rates.',
-    solution: 'Implemented AI-powered SEO and redesigned the e-commerce platform.',
+    challenge: 'Online store was invisible in search and visitors were not buying.',
+    solution: 'Technical SEO overhaul and conversion-focused redesign of the entire shopping experience.',
     results: [
       '300% increase in organic traffic',
       '150% improvement in conversion rate',
@@ -996,7 +996,7 @@ export const caseStudies: CaseStudy[] = [
     title: 'Healthcare App Launch',
     client: 'MediCare Plus',
     industry: 'Healthcare',
-    challenge: 'Needed a reliable telemedicine platform for rural patients.',
+    challenge: 'Rural patients needed reliable access to healthcare consultations.',
     solution: 'Developed a custom mobile app with video consultation features.',
     results: [
       '10,000+ app downloads in first month',
@@ -1010,8 +1010,8 @@ export const caseStudies: CaseStudy[] = [
     title: 'Brand Awareness Campaign',
     client: 'Bihar Tourism',
     industry: 'Government',
-    challenge: 'Low awareness of tourist destinations in Bihar.',
-    solution: 'Created comprehensive digital marketing and content strategy.',
+    challenge: 'Tourists did not know about Bihar\'s incredible destinations.',
+    solution: 'Content strategy and targeted campaigns showcasing Bihar\'s heritage and attractions.',
     results: [
       '5M+ social media impressions',
       '200% increase in website traffic',
@@ -1041,7 +1041,7 @@ export const blogPosts: BlogPost[] = [
   {
     id: '1',
     title: 'How AI is Revolutionizing Digital Marketing in 2026',
-    excerpt: 'Discover how artificial intelligence is transforming the way businesses connect with their audiences.',
+    excerpt: 'Practical ways businesses are using AI to cut costs and drive revenue right now.',
     content: 'Full article content here...',
     author: 'Md Faizan',
     date: '2026-02-10',
@@ -1052,7 +1052,7 @@ export const blogPosts: BlogPost[] = [
   {
     id: '2',
     title: 'SEO Strategies for Competitive Markets',
-    excerpt: 'Learn proven SEO techniques to outrank established competitors in mature markets.',
+    excerpt: 'Specific tactics that work in competitive markets where everyone is fighting for the same keywords.',
     content: 'Full article content here...',
     author: 'Altamash Khan',
     date: '2026-02-08',
@@ -1063,7 +1063,7 @@ export const blogPosts: BlogPost[] = [
   {
     id: '3',
     title: 'The Future of Podcast Marketing',
-    excerpt: 'Why podcasts are becoming the most effective medium for brand storytelling.',
+    excerpt: 'The data behind why podcasts build deeper customer relationships than most other channels.',
     content: 'Full article content here...',
     author: 'Md Faizan',
     date: '2026-02-05',
@@ -1074,7 +1074,7 @@ export const blogPosts: BlogPost[] = [
   {
     id: '4',
     title: 'Cloud Migration: A Complete Guide for SMEs',
-    excerpt: 'Everything small and medium businesses need to know about moving to the cloud.',
+    excerpt: 'A practical roadmap for SMBs considering cloud migration, including costs and timelines.',
     content: 'Full article content here...',
     author: 'Md Faizan',
     date: '2026-02-01',
@@ -1099,49 +1099,49 @@ export const faqItems: FAQItem[] = [
   {
     id: '1',
     question: 'What is the typical timeline for a project?',
-    answer: 'Project timelines vary based on complexity. A simple website takes 2-4 weeks, while complex software solutions may take 8-12 weeks. We provide detailed timelines during the consultation phase.',
+    answer: 'Simple websites: 2-4 weeks. Complex software: 8-12 weeks. We give you a detailed timeline upfront before any work begins.',
     category: 'Timeline',
   },
   {
     id: '2',
     question: 'What is your refund policy?',
-    answer: 'We offer a full refund if you are unsatisfied with our services within the first 14 days. For ongoing projects, refunds are prorated based on work completed.',
+    answer: 'Full refund within 14 days if you are not satisfied. For ongoing projects, we prorate based on work completed.',
     category: 'Refund Policy',
   },
   {
     id: '3',
     question: 'What payment methods do you accept?',
-    answer: 'We accept UPI, credit/debit cards, net banking, and bank transfers. For enterprise clients, we also offer monthly billing options.',
+    answer: 'UPI, cards, net banking, and bank transfers. Enterprise clients can request monthly billing.',
     category: 'Payments',
   },
   {
     id: '4',
     question: 'How does AI enhance your services?',
-    answer: 'We use AI for data analysis, content optimization, audience targeting, performance prediction, and automation. This results in better outcomes and faster delivery.',
+    answer: 'AI helps us analyze data faster, target audiences more precisely, and deliver better results in less time. We use it as a tool, not a replacement for strategy.',
     category: 'AI Technology',
   },
   {
     id: '5',
     question: 'Do you provide 24/7 support?',
-    answer: 'Yes, we offer 24/7 support for all our maintenance and support clients. Our AI monitoring system ensures issues are detected and addressed promptly.',
+    answer: 'Yes. Our monitoring systems run 24/7 and alert us to issues before they affect your business. Emergency support included for maintenance clients.',
     category: 'Support',
   },
   {
     id: '6',
     question: 'Can you work with businesses outside Bihar?',
-    answer: 'Absolutely! While we are based in Bhagalpur, Bihar, we serve clients across India and internationally through our remote collaboration tools.',
+    answer: 'Absolutely. We are based in Bhagalpur but work with clients across India and internationally. Our collaboration tools keep everyone connected.',
     category: 'General',
   },
   {
     id: '7',
     question: 'How do you ensure data security?',
-    answer: 'We follow industry best practices including encryption, secure hosting, regular audits, and compliance with data protection regulations. Your data security is our priority.',
+    answer: 'Encryption, secure hosting, regular security audits, and full compliance with data protection laws. We take security seriously.',
     category: 'Security',
   },
   {
     id: '8',
     question: 'What makes Sovereon different from competitors?',
-    answer: 'Our AI-first approach, local presence in Bihar, dedicated team led by Md Faizan and Altamash Khan, and our commitment to ROI-focused results set us apart.',
+    answer: 'Three things: we are technical founders who understand business, we focus on revenue metrics not vanity numbers, and we actually pick up the phone when you call.',
     category: 'General',
   },
 ];
@@ -1165,7 +1165,7 @@ export const pricingPlans: PricingPlan[] = [
   {
     id: 'starter',
     name: 'Starter',
-    description: 'Perfect for small businesses getting started',
+    description: 'For small businesses ready to establish their digital presence',
     price: '₹9,999',
     period: 'per month',
     features: [
@@ -1175,12 +1175,12 @@ export const pricingPlans: PricingPlan[] = [
       'Email support',
       '5 hours of maintenance',
     ],
-    cta: 'Get Started',
+    cta: 'Start Growing'
   },
   {
     id: 'professional',
     name: 'Professional',
-    description: 'Ideal for growing businesses',
+    description: 'For businesses ready to scale their marketing efforts',
     price: '₹24,999',
     period: 'per month',
     features: [
@@ -1193,12 +1193,12 @@ export const pricingPlans: PricingPlan[] = [
       'Content creation (4 pieces/month)',
     ],
     highlighted: true,
-    cta: 'Most Popular',
+    cta: 'Scale Your Business'
   },
   {
     id: 'enterprise',
     name: 'Enterprise',
-    description: 'For businesses needing full-service solutions',
+    description: 'For organizations that need comprehensive digital transformation',
     price: '₹49,999',
     period: 'per month',
     features: [
@@ -1211,7 +1211,7 @@ export const pricingPlans: PricingPlan[] = [
       'Unlimited content creation',
       'Monthly strategy sessions',
     ],
-    cta: 'Contact Us',
+    cta: 'Book a Strategy Call'
   },
 ];
 

@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Star, ArrowRight } from 'lucide-react';
 import { cmsApi } from '@/services/cmsApi';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SEO } from '@/components/SEO';
 
 interface Testimonial {
   id: string;
@@ -72,16 +73,22 @@ export function TestimonialsPage() {
   }
 
   return (
+    <>
+      <SEO
+        title="Client Testimonials"
+        description="Real results from real clients. See how businesses have grown with Sovereon's AI systems and software development."
+        canonical="/testimonials"
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <Badge className="badge-ai mb-4">Testimonials</Badge>
+          <Badge className="badge-ai mb-4">Results</Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            What Our <span className="text-gradient">Clients Say</span>
+            Client <span className="text-gradient">Success Stories</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Real feedback from businesses we&apos;ve helped grow with our AI-powered solutions
+            Real businesses, real metrics, real growth. Here is what our clients say about working with us.
           </p>
         </div>
 
@@ -132,5 +139,6 @@ export function TestimonialsPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

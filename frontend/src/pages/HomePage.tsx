@@ -40,6 +40,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { cmsApi } from '@/services/cmsApi';
+import { SEO, buildLocalBusinessSchema } from '@/components/SEO';
 
 // Types
 interface ServiceCategory {
@@ -84,7 +85,7 @@ interface FutureQuest {
 
 function HeroSection() {
   return (
-    <section className="relative min-h-[600px] min-h-screen flex items-center justify-center overflow-hidden pt-20">
+    <section className="relative min-h-[600px] min-h-screen flex items-center justify-center overflow-hidden pt-20" aria-label="Hero section">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-transparent to-transparent" />
@@ -118,25 +119,24 @@ function HeroSection() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 mb-6 animate-fade-in-up">
             <Brain className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium">AI-Powered Digital Solutions</span>
+            <span className="text-sm font-medium">Built by engineers. Designed for growth.</span>
           </div>
 
           {/* Main Headline */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight mb-6 animate-fade-in-up animation-delay-100">
-            <span className="text-gradient">Sovereon Inc.</span>
+            <span className="text-gradient">AI Systems That</span>
             <br />
-            <span className="text-foreground">AI-Powered Growth</span>
+            <span className="text-foreground">Drive Real Revenue</span>
             <br />
             <span className="text-muted-foreground text-3xl sm:text-4xl md:text-5xl">
-              in a Competitive Market
+              Not Just Traffic
             </span>
           </h1>
 
           {/* Subheadline */}
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 animate-fade-in-up animation-delay-200">
-            Established February 2026 in Bhagalpur, Bihar — Delivering AI-Advanced 
-            Services for Unmatched ROI. We help businesses outpace 5+ year market 
-            leaders with cutting-edge technology.
+            Founded February 2026 in Bhagalpur, Bihar. We build software, run marketing campaigns, 
+            and deploy AI systems that actually make you money. Technical founders who understand business.
           </p>
 
           {/* CTA Buttons */}
@@ -146,8 +146,8 @@ function HeroSection() {
               size="lg"
               className="btn-ai text-lg px-8 py-6 relative z-10"
             >
-              <Link to="/pricing">
-                Get Started
+              <Link to="/contact-us">
+                Book a Free Strategy Call
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Link>
             </Button>
@@ -157,7 +157,7 @@ function HeroSection() {
               size="lg"
               className="text-lg px-8 py-6 border-primary/50 hover:bg-primary/10"
             >
-              <Link to="/services">Learn More</Link>
+              <Link to="/case-studies">See Our Results</Link>
             </Button>
           </div>
 
@@ -165,15 +165,15 @@ function HeroSection() {
           <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground animate-fade-in-up animation-delay-400">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-primary" />
+              <span>Revenue-Focused</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-primary" />
+              <span>Technical Founders</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-primary" />
               <span>24/7 Support</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-primary" />
-              <span>AI-Enhanced</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-primary" />
-              <span>ROI-Focused</span>
             </div>
           </div>
         </div>
@@ -189,10 +189,10 @@ function HeroSection() {
 
 function ResultsSection() {
   const stats = [
-    { label: 'Average Growth', value: '30%', icon: TrendingUp, description: 'Faster than traditional methods' },
-    { label: 'Client Satisfaction', value: '95%', icon: Star, description: 'Based on post-project surveys' },
-    { label: 'Projects Delivered', value: '50+', icon: CheckCircle, description: 'Across various industries' },
-    { label: 'Support Response', value: '<2hr', icon: Clock, description: 'Average response time' },
+    { label: 'Revenue Growth', value: '30%', icon: TrendingUp, description: 'Average client improvement' },
+    { label: 'Client Retention', value: '95%', icon: Star, description: 'Continue after first project' },
+    { label: 'Projects Shipped', value: '50+', icon: CheckCircle, description: 'Across India and abroad' },
+    { label: 'Support Response', value: '<2hr', icon: Clock, description: 'Even on weekends' },
   ];
 
   return (
@@ -203,10 +203,10 @@ function ResultsSection() {
           <div className="text-center mb-12">
             <Badge className="badge-ai mb-4">Expected Results</Badge>
             <h2 className="text-responsive-section font-bold mb-4">
-              Expect <span className="text-gradient">30% Faster Growth</span>
+              Measurable Growth, <span className="text-gradient">Not Vanity Metrics</span>
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              AI Analyzes Data for Personalized Strategies — Outpace 5-Year Market Leaders
+              We track revenue impact, lead quality, and conversion rates. Everything else is just noise.
             </p>
           </div>
 
@@ -224,7 +224,7 @@ function ResultsSection() {
                     {stat.value}
                   </div>
                   <div className="font-medium mb-1">{stat.label}</div>
-                  <div className="text-xs text-muted-foreground">{stat.description}</div>
+                  <div className="text-xs text-muted-foreground" aria-label={`${stat.label} description`}>{stat.description}</div>
                 </CardContent>
               </Card>
             ))}
@@ -307,8 +307,8 @@ function WhyChooseUsSection() {
     },
     {
       icon: Zap,
-      title: 'AI-First Strategy',
-      description: 'We leverage cutting-edge AI to deliver faster, smarter, and more effective solutions than traditional agencies.',
+      title: 'AI as Infrastructure',
+      description: 'We use AI to automate repetitive work, analyze data faster, and deliver more value per rupee you spend.',
     },
     {
       icon: TrendingUp,
@@ -328,10 +328,10 @@ function WhyChooseUsSection() {
         <div className="text-center mb-12">
           <Badge className="badge-ai mb-4">Our Advantages</Badge>
           <h2 className="text-responsive-section font-bold mb-4">
-            Why <span className="text-gradient">Choose Us</span>
+            Technical Founders, <span className="text-gradient">Business Results</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            What sets Sovereon apart in a competitive digital landscape
+            We are engineers who understand P&L. That changes everything about how we build.
           </p>
         </div>
 
@@ -388,10 +388,10 @@ function ServicesPreviewSection() {
         <div className="text-center mb-12">
           <Badge className="badge-ai mb-4">Our Services</Badge>
           <h2 className="text-responsive-section font-bold mb-4">
-            Solutions for <span className="text-gradient">Every Need</span>
+            Services That <span className="text-gradient">Move the Needle</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Comprehensive digital services powered by advanced AI technology
+            From custom software to marketing campaigns, everything we deliver is measured against revenue impact.
           </p>
         </div>
 
@@ -417,7 +417,7 @@ function ServicesPreviewSection() {
                       {category.description}
                     </p>
                     <div className="flex items-center text-primary text-sm font-medium">
-                      Explore Services
+                      See What We Build
                       <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </CardContent>
@@ -970,15 +970,23 @@ function ContactFormSection() {
 
 export function HomePage() {
   return (
-    <div className="space-y-0">
-      <HeroSection />
-      <ResultsSection />
-      <WhyChooseUsSection />
-      <ServicesPreviewSection />
-      <ReviewsSection />
-      <CurrentProjectsSection />
-      <FutureQuestsSection />
-      <ContactFormSection />
-    </div>
+    <>
+      <SEO
+        title="AI Systems & Software Development"
+        description="We build AI systems, software, and marketing campaigns that drive real revenue. Based in Bhagalpur, Bihar. Founded 2026."
+        keywords="AI services, software development, digital marketing, Bhagalpur, custom software, mobile apps"
+        schema={buildLocalBusinessSchema()}
+      />
+      <div className="space-y-0">
+        <HeroSection />
+        <ResultsSection />
+        <WhyChooseUsSection />
+        <ServicesPreviewSection />
+        <ReviewsSection />
+        <CurrentProjectsSection />
+        <FutureQuestsSection />
+        <ContactFormSection />
+      </div>
+    </>
   );
 }

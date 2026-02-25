@@ -145,8 +145,8 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-sm text-muted-foreground mb-6 max-w-xs">
-              AI-powered digital solutions for businesses in Bhagalpur, Bihar.
-              Transforming companies with cutting-edge technology since 2026.
+              Software, marketing, and AI systems built for revenue growth. 
+              Based in Bhagalpur, Bihar. Founded 2026.
             </p>
             
             {/* Contact Info */}

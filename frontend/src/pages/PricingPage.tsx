@@ -17,20 +17,27 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Check, Sparkles, ArrowRight } from 'lucide-react';
 import { pricingPlans } from '@/data/siteData';
+import { SEO } from '@/components/SEO';
 
 export function PricingPage() {
   return (
+    <>
+      <SEO
+        title="Pricing"
+        description="Transparent pricing for AI systems, software development, and digital marketing. Custom quotes available for enterprise projects."
+        canonical="/pricing"
+      />
     <div className="pt-24 pb-16">
       {/* Hero Section */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-16">
         <div className="max-w-3xl mx-auto text-center">
           <Badge className="badge-ai mb-4">Pricing</Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Simple, <span className="text-gradient">Transparent</span> Pricing
+            Clear, <span className="text-gradient">Transparent</span> Pricing
           </h1>
           <p className="text-lg text-muted-foreground">
-            Choose the plan that fits your business needs. 
-            All plans include AI-powered optimization.
+            No hidden fees. No surprises. Choose what works for your stage, 
+            upgrade as you grow. Custom quotes available for unique projects.
           </p>
         </div>
       </section>
@@ -133,23 +140,24 @@ export function PricingPage() {
         <Card className="ai-card bg-gradient-to-br from-primary/10 to-accent/10">
           <CardContent className="p-8 md:p-12 text-center">
             <h2 className="text-2xl md:text-3xl font-bold mb-4">
-              Need a Custom Solution?
+              Need Something Different?
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto mb-6">
-              Every business is unique. Contact us for a tailored proposal 
-              that fits your specific requirements and budget.
+              Every business is unique. Tell us what you need and we will put together 
+              a tailored proposal with clear deliverables and pricing.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a href="/contact-us" className="btn-ai px-6 py-3 rounded-lg font-medium">
                 Request Custom Quote
               </a>
               <a href="tel:8789109928" className="px-6 py-3 rounded-lg font-medium border border-primary/50 hover:bg-primary/10 transition-colors">
-                Call Us: 8789109928
+                Call: 8789109928
               </a>
             </div>
           </CardContent>
         </Card>
       </section>
     </div>
+    </>
   );
 }

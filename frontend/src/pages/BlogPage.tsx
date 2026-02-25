@@ -19,20 +19,27 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Calendar, Clock, User, BookOpen } from 'lucide-react';
 import { blogPosts } from '@/data/siteData';
+import { SEO } from '@/components/SEO';
 
 export function BlogPage() {
   return (
+    <>
+      <SEO
+        title="Blog & Resources"
+        description="Practical insights on AI, software development, and digital marketing. Written by the engineers and marketers at Sovereon."
+        canonical="/blog"
+      />
     <div className="pt-24 pb-16">
       {/* Hero Section */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-16">
         <div className="max-w-3xl mx-auto text-center">
-          <Badge className="badge-ai mb-4">Resources</Badge>
+          <Badge className="badge-ai mb-4">Blog</Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Insights & <span className="text-gradient">Resources</span>
+            Practical <span className="text-gradient">Insights</span>
           </h1>
           <p className="text-lg text-muted-foreground">
-            Learn about AI-powered marketing, digital strategies, 
-            and industry trends from our experts.
+            No fluff. Just practical advice on AI, software, and marketing 
+            from the team that actually builds these systems.
           </p>
         </div>
       </section>
@@ -131,5 +138,6 @@ export function BlogPage() {
         </Card>
       </section>
     </div>
+    </>
   );
 }

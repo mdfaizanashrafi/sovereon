@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight } from 'lucide-react';
 import { cmsApi } from '@/services/cmsApi';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SEO } from '@/components/SEO';
 
 interface Service {
   id: string;
@@ -67,16 +68,23 @@ export function ServicesPage() {
   }
 
   return (
+    <>
+      <SEO
+        title="Our Services"
+        description="AI systems, custom software, mobile apps, and marketing services that drive revenue. Built by engineers in Bhagalpur, Bihar."
+        canonical="/services"
+        keywords="AI services, custom software, mobile app development, digital marketing, Bhagalpur"
+      />
     <div className="pt-24 pb-16">
-      <section className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="container mx-auto px-4 sm:px-6 lg:px-8" aria-label="Services listing">
         {/* Header */}
         <div className="text-center mb-12">
-          <Badge className="badge-ai mb-4">Our Services</Badge>
+          <Badge className="badge-ai mb-4">What We Build</Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Solutions for <span className="text-gradient">Every Need</span>
+            Services That <span className="text-gradient">Drive Revenue</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Comprehensive digital services powered by advanced AI technology
+            Software, marketing, and AI systems built by engineers who understand business. Every project measured by impact on your bottom line.
           </p>
         </div>
 
@@ -99,7 +107,7 @@ export function ServicesPage() {
                           {service.shortDescription}
                         </p>
                         <div className="flex items-center text-primary text-sm font-medium">
-                          Learn More
+                          See Details
                           <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                         </div>
                       </CardContent>
@@ -112,5 +120,6 @@ export function ServicesPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

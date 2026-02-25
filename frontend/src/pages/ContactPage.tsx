@@ -31,6 +31,7 @@ import {
 } from '@/components/ui/select';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle, Instagram, Linkedin, Facebook } from 'lucide-react';
 import { companyInfo, serviceCategories } from '@/data/siteData';
+import { SEO, buildLocalBusinessSchema } from '@/components/SEO';
 
 export function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,17 +76,23 @@ export function ContactPage() {
   };
 
   return (
+    <>
+      <SEO
+        title="Contact Us"
+        description="Get in touch with Sovereon Inc. Book a free strategy call. We are based in Bhagalpur, Bihar and work with clients across India."
+        canonical="/contact-us"
+        schema={buildLocalBusinessSchema()}
+      />
     <div className="pt-24 pb-16">
       {/* Hero Section */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-16">
         <div className="max-w-3xl mx-auto text-center">
-          <Badge className="badge-ai mb-4">Get in Touch</Badge>
+          <Badge className="badge-ai mb-4">Start a Conversation</Badge>
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
-            Contact <span className="text-gradient">Us</span>
+            Let&apos;s Talk <span className="text-gradient">Business</span>
           </h1>
           <p className="text-lg text-muted-foreground">
-            Have a project in mind? We'd love to hear from you. 
-            Reach out and let's discuss how we can help.
+            Tell us what you are building. We respond to every inquiry personally within 24 hours.
           </p>
         </div>
       </section>
@@ -134,16 +141,16 @@ export function ContactPage() {
           {/* Form */}
           <Card className="ai-card">
             <CardContent className="p-6 md:p-8">
-              <h2 className="text-2xl font-bold mb-6">Send Us a Message</h2>
+              <h2 className="text-2xl font-bold mb-6">Send a Message</h2>
               
               {isSubmitted ? (
                 <div className="text-center py-8">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
                     <CheckCircle className="w-8 h-8 text-primary" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">Thank You!</h3>
+                  <h3 className="text-xl font-semibold mb-2">Message Sent</h3>
                   <p className="text-muted-foreground">
-                    We've received your message and will get back to you within 24 hours.
+                    We review every message personally. Expect a response within 24 hours.
                   </p>
                 </div>
               ) : (
@@ -235,11 +242,18 @@ export function ContactPage() {
           <div className="space-y-6">
             <Card className="ai-card">
               <CardContent className="p-0 overflow-hidden">
-                <div className="h-48 sm:h-64 bg-primary/10 flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="w-12 h-12 mx-auto mb-2 text-primary/50" />
-                    <p className="text-sm text-muted-foreground">[PLACEHOLDER_MAP_EMBED]</p>
-                  </div>
+                <div className="h-48 sm:h-64 w-full">
+                  <iframe
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d115408.2186289885!2d86.8566485!3d25.2354729!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39f049f99998e22b%3A0x71a0f4734e3e3c44!2sBhagalpur%2C%20Bihar!5e0!3m2!1sen!2sin!4v1708888888888!5m2!1sen!2sin"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Sovereon Inc. Office Location - Bhagalpur, Bihar"
+                    aria-label="Map showing Bhagalpur, Bihar location"
+                  />
                 </div>
                 <div className="p-6">
                   <h3 className="font-semibold mb-2">Visit Our Office</h3>
@@ -271,5 +285,6 @@ export function ContactPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }
