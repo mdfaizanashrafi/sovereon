@@ -35,7 +35,7 @@ export const companyInfo = {
     full: 'Bhagalpur, Bihar - 812002, India',
   },
   contact: {
-    phone: '9113156083',
+    phone: '7004095896',
     email: 'sovereon@sovereon.online',
     website: 'www.sovereon.online',
   },
