@@ -1,14 +1,18 @@
 /**
- * Admin Authentication Middleware
+ * ============================================================================
+ * ADMIN AUTHENTICATION MIDDLEWARE
+ * ============================================================================
  * Enhanced session-based authentication with rate limiting and security features
+ * Now uses Repository Pattern for database access
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import { AppError, AuthError } from '../utils/errors';
+import { AdminUserRepository } from '../repositories/AdminUserRepository';
 
-const prisma = new PrismaClient();
+// Repository instance
+const adminRepo = new AdminUserRepository();
 
 // Simple in-memory rate limiter for login attempts
 // In production, consider using Redis
@@ -99,10 +103,7 @@ export async function adminAuthMiddleware(
       throw new AuthError('Admin authentication required');
     }
 
-    const admin = await prisma.adminUser.findUnique({
-      where: { id: adminId },
-      select: { id: true, username: true },
-    });
+    const admin = await adminRepo.findById(adminId);
 
     if (!admin) {
       req.session.destroy((err) => {
@@ -111,7 +112,7 @@ export async function adminAuthMiddleware(
       throw new AuthError('Invalid admin session');
     }
 
-    req.adminUser = admin;
+    req.adminUser = { id: admin.id, username: admin.username };
     next();
   } catch (error) {
     next(error);
@@ -132,9 +133,7 @@ export async function adminLogin(
     throw new AppError('RATE_LIMITED', 'Too many login attempts. Please try again later.', 429);
   }
 
-  const admin = await prisma.adminUser.findUnique({
-    where: { username },
-  });
+  const admin = await adminRepo.findByUsername(username);
 
   if (!admin) {
     recordFailedAttempt(ip);
@@ -152,10 +151,7 @@ export async function adminLogin(
   clearAttempts(ip);
 
   // Update last login
-  await prisma.adminUser.update({
-    where: { id: admin.id },
-    data: { lastLogin: new Date() },
-  });
+  await adminRepo.updateLastLogin(admin.id);
 
   console.log(`[Security] Successful admin login: ${username} from ${ip}`);
 
@@ -168,12 +164,11 @@ export async function adminLogin(
 export async function checkAdminSession(
   adminId: string
 ): Promise<{ id: string; username: string } | null> {
-  const admin = await prisma.adminUser.findUnique({
-    where: { id: adminId },
-    select: { id: true, username: true },
-  });
-
-  return admin;
+  const admin = await adminRepo.findById(adminId);
+  
+  if (!admin) return null;
+  
+  return { id: admin.id, username: admin.username };
 }
 
 /**
@@ -189,13 +184,10 @@ export async function optionalAdminAuth(
     const adminId = req.session?.adminId;
 
     if (adminId) {
-      const admin = await prisma.adminUser.findUnique({
-        where: { id: adminId },
-        select: { id: true, username: true },
-      });
+      const admin = await adminRepo.findById(adminId);
 
       if (admin) {
-        req.adminUser = admin;
+        req.adminUser = { id: admin.id, username: admin.username };
       }
     }
 
@@ -205,3 +197,5 @@ export async function optionalAdminAuth(
     next();
   }
 }
+
+export default adminAuthMiddleware;

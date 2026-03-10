@@ -1,0 +1,192 @@
+# Grafana Alert Rules for Sovereon Performance Monitoring
+# Import this into Grafana Alerting
+
+apiVersion: 1
+
+groups:
+  - orgId: 1
+    name: sovereon_performance
+    folder: Sovereon
+    interval: 60s
+    rules:
+      # High Error Rate Alert
+      - uid: sovereon-high-error-rate
+        title: High Error Rate
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: rate(http_errors_total[5m]) / rate(http_requests_total[5m]) > 0.05
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is above 5% for the last 5 minutes"
+        labels:
+          severity: critical
+
+      # Slow Response Time Alert
+      - uid: sovereon-slow-response
+        title: Slow API Response Time
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: histogram_quantile(0.95, rate(http_request_duration_ms_bucket[5m])) > 1000
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: "Slow API response times"
+          description: "P95 response time is above 1000ms"
+        labels:
+          severity: warning
+
+      # High Memory Usage Alert
+      - uid: sovereon-high-memory
+        title: High Memory Usage
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: node_memory_usage_bytes{type="used"} / node_memory_usage_bytes{type="total"} > 0.85
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is above 85%"
+        labels:
+          severity: warning
+
+      # Event Loop Lag Alert
+      - uid: sovereon-event-loop-lag
+        title: Event Loop Lag
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: app_event_loop_lag_ms > 100
+        noDataState: NoData
+        execErrState: Error
+        for: 2m
+        annotations:
+          summary: "High event loop lag"
+          description: "Event loop lag is above 100ms"
+        labels:
+          severity: critical
+
+      # Database Slow Query Alert
+      - uid: sovereon-slow-db-query
+        title: Slow Database Queries
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: rate(db_query_latency_ms_sum[5m]) / rate(db_query_latency_ms_count[5m]) > 100
+        noDataState: NoData
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: "Slow database queries"
+          description: "Average query time is above 100ms"
+        labels:
+          severity: warning
+
+      # Cache Hit Rate Alert
+      - uid: sovereon-cache-hit-rate
+        title: Low Cache Hit Rate
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: cache_hit_rate < 0.8
+        noDataState: NoData
+        execErrState: Error
+        for: 10m
+        annotations:
+          summary: "Low cache hit rate"
+          description: "Cache hit rate is below 80%"
+        labels:
+          severity: warning
+
+      # Performance Degradation Alert
+      - uid: sovereon-performance-degradation
+        title: Performance Degradation
+        condition: B
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: benchmark_request_duration_ms > 150
+        noDataState: NoData
+        execErrState: Error
+        for: 10m
+        annotations:
+          summary: "Performance degradation detected"
+          description: "Benchmark response time is above 150ms"
+        labels:
+          severity: warning
+
+contactPoints:
+  - orgId: 1
+    name: sovereon-alerts
+    receivers:
+      - uid: sovereon-slack
+        type: slack
+        settings:
+          url: "${SLACK_WEBHOOK_URL}"
+          title: "Sovereon Performance Alert"
+          text: "{{ .CommonAnnotations.summary }}"
+      - uid: sovereon-email
+        type: email
+        settings:
+          addresses: "${ALERT_EMAIL}"
+          subject: "Sovereon Performance Alert"
+
+policies:
+  - orgId: 1
+    receiver: sovereon-alerts
+    group_by: ['alertname', 'severity']
+    group_wait: 30s
+    group_interval: 5m
+    repeat_interval: 4h
+    routes:
+      - receiver: sovereon-alerts
+        matchers:
+          - severity = critical
+        group_wait: 10s
+        repeat_interval: 1h
+      - receiver: sovereon-alerts
+        matchers:
+          - severity = warning
+        group_wait: 30s
+        repeat_interval: 4h

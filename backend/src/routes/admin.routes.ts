@@ -1,6 +1,11 @@
 /**
- * Admin Routes
+ * ============================================================================
+ * ADMIN ROUTES
+ * ============================================================================
  * Authentication and CMS management endpoints
+ * Refactored to use CRUD Route Factory for reduced boilerplate
+ * 
+ * @version 2.0.0 - Using CRUD Factory
  */
 
 import express, { Request, Response } from 'express';
@@ -9,9 +14,22 @@ import rateLimit from 'express-rate-limit';
 import { adminAuthMiddleware, adminLogin, checkAdminSession } from '../middleware/adminAuth';
 import { asyncHandler } from '../middleware/auth';
 import { formatResponse, AppError } from '../utils/errors';
+import { createAdminCrudRoutes } from '../factories/CrudRouteFactory';
 import * as cmsService from '../services/cms.service';
+import {
+  TeamMemberService,
+  ServiceCategoryService,
+  ServiceCMSService,
+  TestimonialService,
+  FAQService,
+} from '../services/cms-services';
 
-// Rate limiter for admin login - stricter than public endpoints
+const router = express.Router();
+
+// ============================================================================
+// RATE LIMITING
+// ============================================================================
+
 const adminLoginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 10, // 10 attempts per window
@@ -25,22 +43,19 @@ const adminLoginLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-  skipSuccessfulRequests: true, // Don't count successful logins
-});
-
-const router = express.Router();
-
-// Validation schemas
-const loginSchema = z.object({
-  username: z.string().min(1),
-  password: z.string().min(1),
+  skipSuccessfulRequests: true,
 });
 
 // ============================================================================
 // AUTHENTICATION
 // ============================================================================
 
-// Login (with rate limiting)
+const loginSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1),
+});
+
+// Login
 router.post(
   '/auth/login',
   adminLoginLimiter,
@@ -54,9 +69,7 @@ router.post(
       throw new AppError('INVALID_CREDENTIALS', 'Invalid username or password', 401);
     }
 
-    // Set session
     req.session.adminId = admin.id;
-
     res.json(formatResponse(true, { id: admin.id, username: admin.username }));
   })
 );
@@ -66,9 +79,7 @@ router.post(
   '/auth/logout',
   asyncHandler(async (req: Request, res: Response) => {
     req.session.destroy((err) => {
-      if (err) {
-        console.error('[Session] Logout error:', err);
-      }
+      if (err) console.error('[Session] Logout error:', err);
     });
     res.json(formatResponse(true, { message: 'Logged out successfully' }));
   })
@@ -87,7 +98,6 @@ router.get(
     const admin = await checkAdminSession(adminId);
 
     if (!admin) {
-      // Admin no longer exists, destroy session
       req.session.destroy((err) => {
         if (err) console.error('[Session] Failed to destroy session:', err);
       });
@@ -99,209 +109,64 @@ router.get(
 );
 
 // ============================================================================
-// TEAM MEMBERS (Protected)
+// CRUD ROUTES - Using Factory
 // ============================================================================
 
-router.get(
-  '/team-members',
-  adminAuthMiddleware,
-  asyncHandler(async (_req: Request, res: Response) => {
-    const result = await cmsService.getAllTeamMembers();
-    res.json(result);
-  })
-);
+// Team Members
+router.use(createAdminCrudRoutes(
+  { 
+    path: 'team-members', 
+    authMiddleware: adminAuthMiddleware,
+    enableGetById: true 
+  },
+  TeamMemberService
+));
 
-router.post(
-  '/team-members',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const result = await cmsService.createTeamMember(req.body);
-    res.status(201).json(result);
-  })
-);
+// Service Categories
+router.use(createAdminCrudRoutes(
+  { 
+    path: 'service-categories', 
+    authMiddleware: adminAuthMiddleware,
+    enableGetById: true 
+  },
+  ServiceCategoryService
+));
 
-router.put(
-  '/team-members/:id',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const result = await cmsService.updateTeamMember(req.params.id, req.body);
-    res.json(result);
-  })
-);
+// Services
+router.use(createAdminCrudRoutes(
+  { 
+    path: 'services', 
+    authMiddleware: adminAuthMiddleware,
+    enableGetById: true 
+  },
+  ServiceCMSService
+));
 
-router.delete(
-  '/team-members/:id',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const result = await cmsService.deleteTeamMember(req.params.id);
-    res.json(result);
-  })
-);
+// Testimonials
+router.use(createAdminCrudRoutes(
+  { 
+    path: 'testimonials', 
+    authMiddleware: adminAuthMiddleware,
+    enableGetById: true 
+  },
+  TestimonialService
+));
 
-// ============================================================================
-// SERVICE CATEGORIES (Protected)
-// ============================================================================
-
-router.get(
-  '/service-categories',
-  adminAuthMiddleware,
-  asyncHandler(async (_req: Request, res: Response) => {
-    const result = await cmsService.getAllServiceCategories();
-    res.json(result);
-  })
-);
-
-router.post(
-  '/service-categories',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const result = await cmsService.createServiceCategory(req.body);
-    res.status(201).json(result);
-  })
-);
-
-router.put(
-  '/service-categories/:id',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const result = await cmsService.updateServiceCategory(req.params.id, req.body);
-    res.json(result);
-  })
-);
-
-router.delete(
-  '/service-categories/:id',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const result = await cmsService.deleteServiceCategory(req.params.id);
-    res.json(result);
-  })
-);
+// FAQs
+router.use(createAdminCrudRoutes(
+  { 
+    path: 'faqs', 
+    authMiddleware: adminAuthMiddleware,
+    enableGetById: true 
+  },
+  FAQService
+));
 
 // ============================================================================
-// SERVICES (Protected)
+// MANUAL ROUTES - For complex operations not covered by CRUD factory
 // ============================================================================
 
-router.get(
-  '/services',
-  adminAuthMiddleware,
-  asyncHandler(async (_req: Request, res: Response) => {
-    const result = await cmsService.getAllServices();
-    res.json(result);
-  })
-);
-
-router.post(
-  '/services',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const result = await cmsService.createService(req.body);
-    res.status(201).json(result);
-  })
-);
-
-router.put(
-  '/services/:id',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const result = await cmsService.updateService(req.params.id, req.body);
-    res.json(result);
-  })
-);
-
-router.delete(
-  '/services/:id',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const result = await cmsService.deleteService(req.params.id);
-    res.json(result);
-  })
-);
-
-// ============================================================================
-// TESTIMONIALS (Protected)
-// ============================================================================
-
-router.get(
-  '/testimonials',
-  adminAuthMiddleware,
-  asyncHandler(async (_req: Request, res: Response) => {
-    const result = await cmsService.getAllTestimonials();
-    res.json(result);
-  })
-);
-
-router.post(
-  '/testimonials',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const result = await cmsService.createTestimonial(req.body);
-    res.status(201).json(result);
-  })
-);
-
-router.put(
-  '/testimonials/:id',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const result = await cmsService.updateTestimonial(req.params.id, req.body);
-    res.json(result);
-  })
-);
-
-router.delete(
-  '/testimonials/:id',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const result = await cmsService.deleteTestimonial(req.params.id);
-    res.json(result);
-  })
-);
-
-// ============================================================================
-// FAQS (Protected)
-// ============================================================================
-
-router.get(
-  '/faqs',
-  adminAuthMiddleware,
-  asyncHandler(async (_req: Request, res: Response) => {
-    const result = await cmsService.getAllFAQs();
-    res.json(result);
-  })
-);
-
-router.post(
-  '/faqs',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const result = await cmsService.createFAQ(req.body);
-    res.status(201).json(result);
-  })
-);
-
-router.put(
-  '/faqs/:id',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const result = await cmsService.updateFAQ(req.params.id, req.body);
-    res.json(result);
-  })
-);
-
-router.delete(
-  '/faqs/:id',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const result = await cmsService.deleteFAQ(req.params.id);
-    res.json(result);
-  })
-);
-
-// ============================================================================
-// PAGE CONTENT (Protected)
-// ============================================================================
-
+// Page Content
 router.get(
   '/page-contents',
   adminAuthMiddleware,
@@ -315,17 +180,16 @@ router.put(
   '/page-contents/:page/:section',
   adminAuthMiddleware,
   asyncHandler(async (req: Request, res: Response) => {
-    const { page, section } = req.params;
-    const { content } = req.body;
-    const result = await cmsService.updatePageContent(page, section, content);
+    const result = await cmsService.updatePageContent(
+      req.params.page,
+      req.params.section,
+      req.body.content
+    );
     res.json(result);
   })
 );
 
-// ============================================================================
-// GLOBAL SETTINGS (Protected)
-// ============================================================================
-
+// Global Settings
 router.get(
   '/settings',
   adminAuthMiddleware,
@@ -336,30 +200,15 @@ router.get(
 );
 
 router.put(
-  '/settings/:key',
+  '/settings',
   adminAuthMiddleware,
   asyncHandler(async (req: Request, res: Response) => {
-    const { key } = req.params;
-    const { value } = req.body;
-    const result = await cmsService.updateGlobalSetting(key, value);
+    const result = await cmsService.updateMultipleGlobalSettings(req.body);
     res.json(result);
   })
 );
 
-router.put(
-  '/settings/batch',
-  adminAuthMiddleware,
-  asyncHandler(async (req: Request, res: Response) => {
-    const { settings } = req.body;
-    const result = await cmsService.updateMultipleGlobalSettings(settings);
-    res.json(result);
-  })
-);
-
-// ============================================================================
-// CURRENT PROJECTS (Protected)
-// ============================================================================
-
+// Current Projects
 router.get(
   '/current-projects',
   adminAuthMiddleware,
@@ -396,10 +245,7 @@ router.delete(
   })
 );
 
-// ============================================================================
-// FUTURE QUESTS (Protected)
-// ============================================================================
-
+// Future Quests
 router.get(
   '/future-quests',
   adminAuthMiddleware,
@@ -436,15 +282,21 @@ router.delete(
   })
 );
 
-// ============================================================================
-// CASE STUDIES (Protected)
-// ============================================================================
-
+// Case Studies
 router.get(
   '/case-studies',
   adminAuthMiddleware,
   asyncHandler(async (_req: Request, res: Response) => {
     const result = await cmsService.getAllCaseStudies();
+    res.json(result);
+  })
+);
+
+router.get(
+  '/case-studies/:slug',
+  adminAuthMiddleware,
+  asyncHandler(async (req: Request, res: Response) => {
+    const result = await cmsService.getCaseStudyBySlug(req.params.slug);
     res.json(result);
   })
 );
@@ -476,15 +328,21 @@ router.delete(
   })
 );
 
-// ============================================================================
-// BLOG POSTS (Protected)
-// ============================================================================
-
+// Blog Posts
 router.get(
   '/blog-posts',
   adminAuthMiddleware,
   asyncHandler(async (_req: Request, res: Response) => {
     const result = await cmsService.getAllBlogPosts();
+    res.json(result);
+  })
+);
+
+router.get(
+  '/blog-posts/:slug',
+  adminAuthMiddleware,
+  asyncHandler(async (req: Request, res: Response) => {
+    const result = await cmsService.getBlogPostBySlug(req.params.slug);
     res.json(result);
   })
 );

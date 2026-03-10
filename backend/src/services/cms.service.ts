@@ -1,29 +1,46 @@
 /**
- * CMS Service
- * Business logic for content management
+ * ============================================================================
+ * CMS SERVICE - Business Logic Layer
+ * ============================================================================
+ * Business logic for content management.
+ * Uses Repository Pattern for database access.
+ * 
+ * @version 2.0.0 - Refactored to use Repository Pattern
  */
 
-import { PrismaClient } from '@prisma/client';
 import { formatResponse } from '../utils/errors';
+import {
+  TeamMemberRepository,
+  ServiceCategoryRepository,
+  ServiceCMSRepository,
+  TestimonialRepository,
+  FAQRepository,
+  AdminUserRepository,
+} from '../repositories';
+import { getPrismaClient } from '../database/client';
 
-const prisma = new PrismaClient();
+// Repository instances
+const teamMemberRepo = new TeamMemberRepository();
+const categoryRepo = new ServiceCategoryRepository();
+const serviceRepo = new ServiceCMSRepository();
+const testimonialRepo = new TestimonialRepository();
+const faqRepo = new FAQRepository();
+const adminRepo = new AdminUserRepository();
+const prisma = getPrismaClient();
 
 // ============================================================================
 // TEAM MEMBERS
 // ============================================================================
 
 export async function getAllTeamMembers() {
-  const members = await prisma.teamMember.findMany({
-    orderBy: { order: 'asc' },
+  const members = await teamMemberRepo.findAll({
+    sort: { field: 'order', direction: 'asc' },
   });
   return formatResponse(true, members);
 }
 
 export async function getActiveTeamMembers() {
-  const members = await prisma.teamMember.findMany({
-    where: { isActive: true },
-    orderBy: { order: 'asc' },
-  });
+  const members = await teamMemberRepo.findActive();
   return formatResponse(true, members);
 }
 
@@ -35,7 +52,8 @@ export async function createTeamMember(data: {
   image?: string;
   order?: number;
 }) {
-  const member = await prisma.teamMember.create({ data });
+  const order = data.order ?? await teamMemberRepo.getNextOrder();
+  const member = await teamMemberRepo.create({ ...data, order });
   return formatResponse(true, member);
 }
 
@@ -51,15 +69,12 @@ export async function updateTeamMember(
     isActive: boolean;
   }>
 ) {
-  const member = await prisma.teamMember.update({
-    where: { id },
-    data,
-  });
+  const member = await teamMemberRepo.update(id, data);
   return formatResponse(true, member);
 }
 
 export async function deleteTeamMember(id: string) {
-  await prisma.teamMember.delete({ where: { id } });
+  await teamMemberRepo.delete(id);
   return formatResponse(true, { message: 'Team member deleted' });
 }
 
@@ -68,24 +83,12 @@ export async function deleteTeamMember(id: string) {
 // ============================================================================
 
 export async function getAllServiceCategories() {
-  const categories = await prisma.serviceCategory.findMany({
-    include: { services: { orderBy: { order: 'asc' } } },
-    orderBy: { order: 'asc' },
-  });
+  const categories = await categoryRepo.findAllWithServices();
   return formatResponse(true, categories);
 }
 
 export async function getActiveServiceCategories() {
-  const categories = await prisma.serviceCategory.findMany({
-    where: { isActive: true },
-    include: {
-      services: {
-        where: { isActive: true },
-        orderBy: { order: 'asc' },
-      },
-    },
-    orderBy: { order: 'asc' },
-  });
+  const categories = await categoryRepo.findActiveWithServices();
   return formatResponse(true, categories);
 }
 
@@ -95,7 +98,13 @@ export async function createServiceCategory(data: {
   description: string;
   order?: number;
 }) {
-  const category = await prisma.serviceCategory.create({ data });
+  // Check for duplicate slug
+  if (await categoryRepo.slugExists(data.slug)) {
+    return formatResponse(false, null, 'Service category with this slug already exists');
+  }
+
+  const order = data.order ?? await categoryRepo.getNextOrder();
+  const category = await categoryRepo.create({ ...data, order });
   return formatResponse(true, category);
 }
 
@@ -109,15 +118,20 @@ export async function updateServiceCategory(
     isActive: boolean;
   }>
 ) {
-  const category = await prisma.serviceCategory.update({
-    where: { id },
-    data,
-  });
+  // Check for duplicate slug if changing
+  if (data.slug) {
+    const exists = await categoryRepo.slugExists(data.slug, id);
+    if (exists) {
+      return formatResponse(false, null, 'Service category with this slug already exists');
+    }
+  }
+
+  const category = await categoryRepo.update(id, data);
   return formatResponse(true, category);
 }
 
 export async function deleteServiceCategory(id: string) {
-  await prisma.serviceCategory.delete({ where: { id } });
+  await categoryRepo.delete(id);
   return formatResponse(true, { message: 'Service category deleted' });
 }
 
@@ -126,18 +140,15 @@ export async function deleteServiceCategory(id: string) {
 // ============================================================================
 
 export async function getAllServices() {
-  const services = await prisma.serviceCMS.findMany({
+  const services = await serviceRepo.findAll({
+    sort: { field: 'order', direction: 'asc' },
     include: { category: true },
-    orderBy: { order: 'asc' },
   });
   return formatResponse(true, services);
 }
 
 export async function getServiceBySlug(slug: string) {
-  const service = await prisma.serviceCMS.findUnique({
-    where: { slug },
-    include: { category: true },
-  });
+  const service = await serviceRepo.findBySlug(slug);
   return formatResponse(true, service);
 }
 
@@ -152,14 +163,21 @@ export async function createService(data: {
   strategy: { step: number; title: string; description: string }[];
   order?: number;
 }) {
-  const service = await prisma.serviceCMS.create({
-    data: {
-      ...data,
-      features: JSON.stringify(data.features),
-      benefits: JSON.stringify(data.benefits),
-      strategy: JSON.stringify(data.strategy),
-    },
+  // Check for duplicate slug
+  if (await serviceRepo.slugExists(data.slug)) {
+    return formatResponse(false, null, 'Service with this slug already exists');
+  }
+
+  const order = data.order ?? await serviceRepo.getNextOrderForCategory(data.categoryId);
+  
+  const service = await serviceRepo.create({
+    ...data,
+    order,
+    features: JSON.stringify(data.features),
+    benefits: JSON.stringify(data.benefits),
+    strategy: JSON.stringify(data.strategy),
   });
+  
   return formatResponse(true, service);
 }
 
@@ -178,20 +196,25 @@ export async function updateService(
     isActive: boolean;
   }>
 ) {
+  // Check for duplicate slug if changing
+  if (data.slug) {
+    const exists = await serviceRepo.slugExists(data.slug, id);
+    if (exists) {
+      return formatResponse(false, null, 'Service with this slug already exists');
+    }
+  }
+
   const updateData: any = { ...data };
   if (data.features) updateData.features = JSON.stringify(data.features);
   if (data.benefits) updateData.benefits = JSON.stringify(data.benefits);
   if (data.strategy) updateData.strategy = JSON.stringify(data.strategy);
 
-  const service = await prisma.serviceCMS.update({
-    where: { id },
-    data: updateData,
-  });
+  const service = await serviceRepo.update(id, updateData);
   return formatResponse(true, service);
 }
 
 export async function deleteService(id: string) {
-  await prisma.serviceCMS.delete({ where: { id } });
+  await serviceRepo.delete(id);
   return formatResponse(true, { message: 'Service deleted' });
 }
 
@@ -200,17 +223,14 @@ export async function deleteService(id: string) {
 // ============================================================================
 
 export async function getAllTestimonials() {
-  const testimonials = await prisma.testimonial.findMany({
-    orderBy: { order: 'asc' },
+  const testimonials = await testimonialRepo.findAll({
+    sort: { field: 'order', direction: 'asc' },
   });
   return formatResponse(true, testimonials);
 }
 
 export async function getActiveTestimonials() {
-  const testimonials = await prisma.testimonial.findMany({
-    where: { isActive: true },
-    orderBy: { order: 'asc' },
-  });
+  const testimonials = await testimonialRepo.findActive();
   return formatResponse(true, testimonials);
 }
 
@@ -225,7 +245,8 @@ export async function createTestimonial(data: {
   afterMetric?: string;
   order?: number;
 }) {
-  const testimonial = await prisma.testimonial.create({ data });
+  const order = data.order ?? await testimonialRepo.getNextOrder();
+  const testimonial = await testimonialRepo.create({ ...data, order });
   return formatResponse(true, testimonial);
 }
 
@@ -244,15 +265,12 @@ export async function updateTestimonial(
     isActive: boolean;
   }>
 ) {
-  const testimonial = await prisma.testimonial.update({
-    where: { id },
-    data,
-  });
+  const testimonial = await testimonialRepo.update(id, data);
   return formatResponse(true, testimonial);
 }
 
 export async function deleteTestimonial(id: string) {
-  await prisma.testimonial.delete({ where: { id } });
+  await testimonialRepo.delete(id);
   return formatResponse(true, { message: 'Testimonial deleted' });
 }
 
@@ -261,17 +279,14 @@ export async function deleteTestimonial(id: string) {
 // ============================================================================
 
 export async function getAllFAQs() {
-  const faqs = await prisma.fAQ.findMany({
-    orderBy: { order: 'asc' },
+  const faqs = await faqRepo.findAll({
+    sort: { field: 'order', direction: 'asc' },
   });
   return formatResponse(true, faqs);
 }
 
 export async function getActiveFAQs() {
-  const faqs = await prisma.fAQ.findMany({
-    where: { isActive: true },
-    orderBy: { order: 'asc' },
-  });
+  const faqs = await faqRepo.findActive();
   return formatResponse(true, faqs);
 }
 
@@ -281,7 +296,8 @@ export async function createFAQ(data: {
   category: string;
   order?: number;
 }) {
-  const faq = await prisma.fAQ.create({ data });
+  const order = data.order ?? await faqRepo.getNextOrder();
+  const faq = await faqRepo.create({ ...data, order });
   return formatResponse(true, faq);
 }
 
@@ -295,15 +311,12 @@ export async function updateFAQ(
     isActive: boolean;
   }>
 ) {
-  const faq = await prisma.fAQ.update({
-    where: { id },
-    data,
-  });
+  const faq = await faqRepo.update(id, data);
   return formatResponse(true, faq);
 }
 
 export async function deleteFAQ(id: string) {
-  await prisma.fAQ.delete({ where: { id } });
+  await faqRepo.delete(id);
   return formatResponse(true, { message: 'FAQ deleted' });
 }
 
@@ -526,6 +539,7 @@ export async function deleteFutureQuest(id: string) {
   await prisma.futureQuest.delete({ where: { id } });
   return formatResponse(true, { message: 'Future quest deleted' });
 }
+
 // ============================================================================
 // CASE STUDIES
 // ============================================================================

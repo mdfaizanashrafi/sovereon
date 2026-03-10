@@ -1,18 +1,40 @@
+/**
+ * ============================================================================
+ * SOVEREON BACKEND API
+ * ============================================================================
+ * Production-grade Express application with comprehensive observability
+ */
+
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 import 'dotenv/config';
-import { securityHeaders, additionalSecurityHeaders, sanitizeInput, apiRateLimiter } from './middleware/security';
+
+// Observability imports
+import { 
+  initializeLogger, 
+  logger, 
+  shutdownLogger,
+  createRequestLogger 
+} from './utils/logger';
+import { metricsMiddleware } from './middleware/metrics.middleware';
+import { initializePerformanceMetrics } from './performance/metrics';
+import { tracingMiddleware } from './utils/tracing';
+import { observabilityConfig } from './config/observability';
+
+// Security imports
+import { 
+  securityHeaders, 
+  additionalSecurityHeaders, 
+  sanitizeInput, 
+  apiRateLimiter 
+} from './middleware/security';
+import { requestLogger } from './middleware/requestLogger';
 import { logSecurityAudit } from './utils/security';
+import { setupSwagger } from './config/swagger';
 
-// Extend session to include adminId
-declare module 'express-session' {
-  interface SessionData {
-    adminId?: string;
-  }
-}
-
+// Route imports
 import userRoutes from './routes/users.routes';
 import serviceRoutes from './routes/services.routes';
 import orderRoutes from './routes/orders.routes';
@@ -24,8 +46,21 @@ import publicRoutes from './routes/public.routes';
 import contactRoutes from './routes/contact.routes';
 import seedRoutes from './routes/seed.routes';
 import healthRoutes from './routes/health.routes';
+import v1Routes from './routes/v1';
+import metricsRoutes from './routes/metrics.routes';
+import chaosRoutes from './routes/chaos.routes';
 
-// Environment variable validation
+// Extend Express session
+declare module 'express-session' {
+  interface SessionData {
+    adminId?: string;
+  }
+}
+
+// ============================================================================
+// ENVIRONMENT VALIDATION
+// ============================================================================
+
 function validateEnv(): string[] {
   const errors: string[] = [];
   const required = ['DATABASE_URL', 'SESSION_SECRET'];
@@ -47,6 +82,20 @@ function validateEnv(): string[] {
   return errors;
 }
 
+// ============================================================================
+// APPLICATION SETUP
+// ============================================================================
+
+// Initialize observability first
+initializeLogger();
+logger.info('Starting Sovereon Backend API', {
+  version: observabilityConfig.appVersion,
+  environment: observabilityConfig.environment,
+  observabilityEnabled: observabilityConfig.enabled,
+  metricsEnabled: observabilityConfig.metrics.enabled,
+  tracingEnabled: observabilityConfig.tracing.enabled,
+});
+
 // Create Express app
 const app: Express = express();
 const PORT = parseInt(process.env.PORT || '5000', 10);
@@ -58,15 +107,45 @@ if (IS_PRODUCTION) {
   app.set('trust proxy', 1);
 }
 
-// Apply security headers
+// ============================================================================
+// SECURITY MIDDLEWARE
+// ============================================================================
+
 app.use(securityHeaders);
 app.use(additionalSecurityHeaders);
 
-// Validate environment before starting
+// ============================================================================
+// OBSERVABILITY MIDDLEWARE (Order matters!)
+// ============================================================================
+
+// 1. Tracing middleware (first to capture full request lifecycle)
+if (observabilityConfig.tracing.enabled) {
+  app.use(tracingMiddleware);
+  logger.debug('Tracing middleware enabled');
+}
+
+// 2. Metrics middleware (captures request/response metrics)
+if (observabilityConfig.metrics.enabled) {
+  app.use(metricsMiddleware);
+  logger.debug('Metrics middleware enabled');
+}
+
+// 3. Request logging (structured logging with context)
+app.use(requestLogger);
+
+// ============================================================================
+// API DOCUMENTATION
+// ============================================================================
+
+setupSwagger(app);
+
+// ============================================================================
+// ENVIRONMENT VALIDATION
+// ============================================================================
+
 const envErrors = validateEnv();
 if (envErrors.length > 0) {
-  console.error('[Fatal] Environment validation failed:');
-  envErrors.forEach(e => console.error(`  - ${e}`));
+  logger.fatal('Environment validation failed', undefined, { errors: envErrors });
   if (IS_PRODUCTION) {
     process.exit(1);
   }
@@ -75,18 +154,25 @@ if (envErrors.length > 0) {
 // Run security audit
 logSecurityAudit();
 
-// Import connect-pg-simple for production session store
+// ============================================================================
+// SESSION STORE SETUP
+// ============================================================================
+
 let PgSession: any;
 if (IS_PRODUCTION) {
   try {
     const connectPgSimple = require('connect-pg-simple');
     PgSession = connectPgSimple(session);
+    logger.info('PostgreSQL session store configured');
   } catch (e) {
-    console.warn('[Warning] connect-pg-simple not available, using MemoryStore');
+    logger.warn('connect-pg-simple not available, using MemoryStore');
   }
 }
 
-// CORS configuration - allow multiple origins
+// ============================================================================
+// CORS CONFIGURATION
+// ============================================================================
+
 const allowedOrigins = [
   process.env.FRONTEND_URL,
   process.env.API_URL,
@@ -98,12 +184,11 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-    console.warn(`[CORS] Blocked request from origin: ${origin}`);
+    logger.warn('CORS blocked request', undefined, { origin });
     return callback(null, false);
   },
   credentials: true,
@@ -111,15 +196,25 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
+// ============================================================================
+// BODY PARSING & COOKIES
+// ============================================================================
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(sanitizeInput);
 
-// Apply general API rate limiting
+// ============================================================================
+// RATE LIMITING
+// ============================================================================
+
 app.use('/api/', apiRateLimiter);
 
-// Session configuration
+// ============================================================================
+// SESSION CONFIGURATION
+// ============================================================================
+
 const sessionConfig: session.SessionOptions = {
   secret: process.env.SESSION_SECRET || 'development-secret-not-for-production',
   resave: false,
@@ -133,42 +228,66 @@ const sessionConfig: session.SessionOptions = {
   },
 };
 
-// Use PostgreSQL session store in production
 if (IS_PRODUCTION && PgSession && process.env.DATABASE_URL) {
   sessionConfig.store = new PgSession({
     conString: process.env.DATABASE_URL,
     tableName: 'session',
     createTableIfMissing: true,
-    pruneSessionInterval: 60 * 15, // Prune expired sessions every 15 minutes
+    pruneSessionInterval: 60 * 15,
   });
-  console.log('[Session] Using PostgreSQL session store');
+  logger.info('Using PostgreSQL session store');
 } else {
-  console.log('[Session] Using MemoryStore (not recommended for production)');
+  logger.info('Using MemoryStore for sessions');
 }
 
 app.use(session(sessionConfig));
 
-// Request logging middleware with response time
+// ============================================================================
+// REQUEST CONTEXT ENHANCEMENT
+// ============================================================================
+
 app.use((req: Request, res: Response, next: NextFunction) => {
-  const start = Date.now();
-  const requestId = Math.random().toString(36).substring(7);
+  // Create request-specific logger
+  const requestLogger = createRequestLogger(
+    req.requestId || 'unknown',
+    (req as any).user?.id || (req as any).adminUser?.id
+  );
   
+  // Attach to request for use in routes
+  (req as any).logger = requestLogger;
+  
+  // Log request completion with context
   res.on('finish', () => {
-    const duration = Date.now() - start;
-    const logLevel = res.statusCode >= 400 ? 'error' : 'info';
-    const message = `[${requestId}] ${req.method} ${req.path} ${res.statusCode} - ${duration}ms`;
+    const duration = Date.now() - (req as any)._startTime || 0;
+    const level = res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info';
     
-    if (logLevel === 'error') {
-      console.error(message);
+    const logData = {
+      method: req.method,
+      path: req.path,
+      statusCode: res.statusCode,
+      duration,
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
+      requestId: req.requestId,
+    };
+    
+    if (level === 'error') {
+      requestLogger.error('Request completed with error', undefined, logData);
+    } else if (level === 'warn') {
+      requestLogger.warn('Request completed with warning', undefined, logData);
     } else {
-      console.log(message);
+      requestLogger.info('Request completed', logData);
     }
   });
   
   next();
 });
 
-// Root API endpoint - API info
+// ============================================================================
+// API ROUTES
+// ============================================================================
+
+// Root API endpoint
 app.get('/api', (req: Request, res: Response) => {
   res.json({
     success: true,
@@ -176,28 +295,45 @@ app.get('/api', (req: Request, res: Response) => {
     version: '1.0.0',
     timestamp: new Date().toISOString(),
     environment: NODE_ENV,
-    endpoints: {
-      health: '/api/health',
-      healthDb: '/api/health/db',
-      healthEmail: '/api/health/email',
-      public: '/api/public/*',
-      admin: '/api/admin/*',
-      contact: '/api/contact',
-      consultation: '/api/consultation',
-      users: '/api/users',
-      services: '/api/services',
-      orders: '/api/orders',
-      invoices: '/api/invoices',
-      subscriptions: '/api/subscriptions',
-      payments: '/api/payments'
-    }
+    observability: {
+      enabled: observabilityConfig.enabled,
+      metrics: observabilityConfig.metrics.enabled,
+      tracing: observabilityConfig.tracing.enabled,
+    },
+    documentation: '/api/docs',
+    versions: {
+      v1: {
+        url: '/api/v1',
+        status: 'current',
+        endpoints: {
+          public: '/api/v1/team-members, /api/v1/services, etc.',
+          admin: '/api/v1/admin/*',
+        },
+      },
+    },
+    legacy: {
+      status: 'deprecated',
+      note: 'Legacy routes will be removed in v2. Please migrate to /api/v1/*',
+    },
   });
 });
 
-// Health check routes (must be before other routes)
+// Health check routes (must be before other routes for quick responses)
 app.use('/api', healthRoutes);
 
-// Routes
+// Performance metrics routes
+app.use('/api/metrics', metricsRoutes);
+
+// Chaos engineering routes (development only, protected by environment check)
+app.use('/api/chaos', chaosRoutes);
+
+// Initialize performance metrics collection
+initializePerformanceMetrics();
+
+// API V1 Routes (Recommended)
+app.use('/api/v1', v1Routes);
+
+// Legacy Routes (Deprecated - will be removed in v2)
 app.use('/api/users', userRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/orders', orderRoutes);
@@ -209,54 +345,96 @@ app.use('/api/public', publicRoutes);
 app.use('/api', contactRoutes);
 app.use('/api', seedRoutes);
 
+// Example usage of benchmark middleware
+// app.get('/api/services', benchmark('get_services'), asyncHandler(async (req, res) => {
+//   // handler
+// }));
+
+// ============================================================================
+// ERROR HANDLING
+// ============================================================================
+
 // 404 handler
 app.use((req: Request, res: Response) => {
-  res.status(404).json({ 
-    success: false, 
-    error: { 
-      code: 'NOT_FOUND', 
-      message: 'Endpoint not found' 
-    } 
+  logger.warn('Route not found', undefined, {
+    method: req.method,
+    path: req.path,
+    ip: req.ip,
+  });
+  
+  res.status(404).json({
+    success: false,
+    error: {
+      code: 'NOT_FOUND',
+      message: 'Endpoint not found',
+    },
+    timestamp: new Date().toISOString(),
   });
 });
 
 // Global error handler
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error('[Error]', err);
+  const requestLogger = (req as any).logger || logger;
+  
+  requestLogger.error('Unhandled error', err, {
+    method: req.method,
+    path: req.path,
+    requestId: req.requestId,
+  });
   
   // Don't leak stack traces in production
-  const message = IS_PRODUCTION && err.status === 500 
-    ? 'Internal server error' 
+  const message = IS_PRODUCTION && err.status === 500
+    ? 'Internal server error'
     : err.message || 'Internal server error';
   
   res.status(err.status || 500).json({
     success: false,
     error: {
       code: err.code || 'INTERNAL_ERROR',
-      message
-    }
+      message,
+      requestId: req.requestId,
+    },
+    timestamp: new Date().toISOString(),
   });
 });
 
-// Graceful shutdown handling
+// ============================================================================
+// SERVER STARTUP
+// ============================================================================
+
 const server = app.listen(PORT, () => {
+  logger.info('Server started successfully', {
+    port: PORT,
+    environment: NODE_ENV,
+    healthCheck: `http://localhost:${PORT}/api/health`,
+    metrics: `http://localhost:${PORT}/api/metrics`,
+  });
+  
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${NODE_ENV}`);
   console.log(`🏥 Health check: http://localhost:${PORT}/api/health`);
+  console.log(`📈 Metrics: http://localhost:${PORT}/api/metrics`);
 });
 
-// Handle graceful shutdown
-const gracefulShutdown = (signal: string) => {
-  console.log(`\n${signal} received. Starting graceful shutdown...`);
+// ============================================================================
+// GRACEFUL SHUTDOWN
+// ============================================================================
+
+const gracefulShutdown = async (signal: string) => {
+  logger.info(`Received ${signal}, starting graceful shutdown`);
   
-  server.close(() => {
-    console.log('HTTP server closed');
+  server.close(async () => {
+    logger.info('HTTP server closed');
+    
+    // Flush logs and cleanup
+    await shutdownLogger();
+    
     process.exit(0);
   });
   
   // Force shutdown after 30 seconds
   setTimeout(() => {
-    console.error('Forced shutdown after timeout');
+    logger.fatal('Forced shutdown after timeout');
     process.exit(1);
   }, 30000);
 };
@@ -265,13 +443,15 @@ process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  console.error('[Fatal] Uncaught exception:', err);
+process.on('uncaughtException', async (err) => {
+  logger.fatal('Uncaught exception', err);
+  await shutdownLogger();
   process.exit(1);
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('[Fatal] Unhandled rejection at:', promise, 'reason:', reason);
+process.on('unhandledRejection', async (reason, promise) => {
+  logger.fatal('Unhandled rejection', undefined, { reason, promise });
+  await shutdownLogger();
   process.exit(1);
 });
 

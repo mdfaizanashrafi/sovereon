@@ -1,0 +1,213 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "sovereon-performance",
+    "title": "Sovereon Performance Dashboard",
+    "tags": ["performance", "sovereon"],
+    "timezone": "browser",
+    "schemaVersion": 36,
+    "version": 1,
+    "refresh": "10s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Request Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(http_requests_total[5m])",
+            "legendFormat": "{{method}} {{route}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 6, "x": 0, "y": 0 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "reqps",
+            "min": 0
+          }
+        }
+      },
+      {
+        "id": 2,
+        "title": "Response Time (P95)",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, rate(http_request_duration_ms_bucket[5m]))",
+            "legendFormat": "{{method}} {{route}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 6, "x": 6, "y": 0 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ms"
+          }
+        }
+      },
+      {
+        "id": 3,
+        "title": "Error Rate",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "rate(http_errors_total[5m])",
+            "legendFormat": "{{error_type}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 6, "x": 12, "y": 0 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percentunit"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "title": "Active Requests",
+        "type": "stat",
+        "targets": [
+          {
+            "expr": "http_active_requests",
+            "legendFormat": "{{method}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 6, "x": 18, "y": 0 }
+      },
+      {
+        "id": 5,
+        "title": "Response Time Distribution",
+        "type": "heatmap",
+        "targets": [
+          {
+            "expr": "rate(http_request_duration_ms_bucket[5m])",
+            "format": "heatmap"
+          }
+        ],
+        "gridPos": { "h": 10, "w": 12, "x": 0, "y": 8 },
+        "heatmap": {},
+        "dataFormat": "tsbuckets"
+      },
+      {
+        "id": 6,
+        "title": "Memory Usage",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "node_memory_usage_bytes",
+            "legendFormat": "{{type}}"
+          }
+        ],
+        "gridPos": { "h": 10, "w": 12, "x": 12, "y": 8 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "bytes"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "title": "Database Query Latency",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(db_query_latency_ms_sum[5m]) / rate(db_query_latency_ms_count[5m])",
+            "legendFormat": "{{operation}} {{table}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 18 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ms"
+          }
+        }
+      },
+      {
+        "id": 8,
+        "title": "Cache Performance",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "rate(cache_operation_latency_ms_sum[5m]) / rate(cache_operation_latency_ms_count[5m])",
+            "legendFormat": "{{operation}} - {{result}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 18 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ms"
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Event Loop Lag",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "app_event_loop_lag_ms",
+            "legendFormat": "Lag"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 0, "y": 26 },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ms",
+            "thresholds": {
+              "steps": [
+                { "color": "green", "value": null },
+                { "color": "yellow", "value": 50 },
+                { "color": "red", "value": 100 }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Active Connections",
+        "type": "timeseries",
+        "targets": [
+          {
+            "expr": "app_active_connections",
+            "legendFormat": "{{type}}"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 12, "x": 12, "y": 26 }
+      },
+      {
+        "id": 11,
+        "title": "Benchmark Results",
+        "type": "table",
+        "targets": [
+          {
+            "expr": "benchmark_request_duration_ms",
+            "format": "table"
+          }
+        ],
+        "gridPos": { "h": 8, "w": 24, "x": 0, "y": 34 }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "environment",
+          "type": "custom",
+          "query": "production,staging,development",
+          "current": { "text": "production", "value": "production" }
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "name": "Deployments",
+          "datasource": "Prometheus",
+          "expr": "changes(app_version[1m]) > 0",
+          "tagKeys": "version",
+          "textFormat": "Deployed {{version}}"
+        }
+      ]
+    }
+  },
+  "overwrite": true
+}
