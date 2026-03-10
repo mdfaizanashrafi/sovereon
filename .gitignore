@@ -5,6 +5,7 @@
 WEBSITE_HUMANIZATION_AND_SEO_CHANGES.md
 
 *.txt
+!robots.txt
 
 # ===============================
 # 🔐 Environment Variables

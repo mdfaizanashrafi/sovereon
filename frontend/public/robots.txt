@@ -1,0 +1,35 @@
+# robots.txt for sovereign.online
+# Last updated: March 2026
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://sovereon.online/sitemap.xml
+
+# Disallow admin and API routes
+Disallow: /admin/
+Disallow: /api/
+
+# Disallow utility pages
+Disallow: /thank-you/
+Disallow: /404
+
+Host: https://sovereon.online
+
+# Crawl-delay for aggressive bots
+User-agent: AhrefsBot
+Crawl-delay: 1
+
+User-agent: SemrushBot
+Crawl-delay: 1
+
+User-agent: MJ12bot
+Crawl-delay: 2
+
+# Allow major search engines full access
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
