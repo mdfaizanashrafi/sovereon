@@ -12,14 +12,37 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle, TrendingUp, Mail } from 'lucide-react';
 import { serviceCategories } from '@/data/siteData';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 export function EmailSMSMarketingPage() {
   const service = serviceCategories
     .find(c => c.id === 'communication-messaging')
     ?.services.find(s => s.id === 'email-sms-marketing')!;
 
+  const serviceSchema = buildServiceSchema(
+    service.title,
+    service.fullDescription,
+    '/services/email-sms-marketing'
+  );
+
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: '', url: '/' },
+    { name: '', url: '/services' },
+    { name: '', url: '/services/communication-messaging' },
+    { name: service.title, url: '/services/email-sms-marketing' },
+  ]);
+
   return (
-    <div className="pt-24 pb-16">
+    <>
+      <SEO
+        title={service.title}
+        description={service.fullDescription}
+        keywords="email marketing, SMS marketing, multi-channel marketing"
+        canonical="/services/email-sms-marketing"
+        ogType="service"
+        schema={{ '@graph': [serviceSchema, breadcrumbSchema] }}
+      />
+      <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
           <Link to="/services" className="hover:text-primary transition-colors">Services</Link>
@@ -112,5 +135,6 @@ export function EmailSMSMarketingPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

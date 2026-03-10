@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle, TrendingUp, Users } from 'lucide-react';
 import { serviceCategories } from '@/data/siteData';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 export function InfluencerMarketingPage() {
   const service = serviceCategories
@@ -19,6 +20,24 @@ export function InfluencerMarketingPage() {
     ?.services.find(s => s.id === 'influencer-marketing')!;
 
   return (
+    <>
+      <SEO
+        title="Influencer Marketing Services"
+        description="Connect with influencers who align with your brand. Our AI matching system identifies perfect partners for authentic collaborations that drive real results."
+        canonical="/services/influencer-marketing"
+        keywords="influencer marketing, brand partnerships, influencer collaboration, creator marketing"
+        schema={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            buildServiceSchema('Influencer Marketing Services', 'AI-powered influencer marketing and brand partnerships', '/services/influencer-marketing'),
+            buildBreadcrumbSchema([
+              { name: '', url: '/' },
+              { name: '', url: '/services' },
+              { name: '', url: '/services/influencer-marketing' },
+            ]),
+          ],
+        }}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
@@ -112,5 +131,6 @@ export function InfluencerMarketingPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

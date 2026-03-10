@@ -46,8 +46,8 @@ export interface SEOProps {
   ogType?: 'website' | 'article' | 'service';
   /** Noindex directive */
   noindex?: boolean;
-  /** JSON-LD schema object */
-  schema?: Record<string, unknown>;
+  /** JSON-LD schema object or array of objects */
+  schema?: Record<string, unknown> | Record<string, unknown>[];
   /** Article published date (for blog posts) */
   publishedTime?: string;
   /** Article modified date (for blog posts) */
@@ -320,6 +320,83 @@ export function buildLocalBusinessSchema(): Record<string, unknown> {
       closes: '18:00',
     },
     priceRange: '₹₹',
+  };
+}
+
+/**
+ * Build BreadcrumbList schema for navigation
+ */
+export function buildBreadcrumbSchema(
+  items: Array<{ name: string; url: string }>
+): Record<string, unknown> {
+  return {
+    '@type': 'BreadcrumbList',
+    itemListElement: items.map((item, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: item.name,
+      item: item.url.startsWith('http') ? item.url : `${SITE_URL}${item.url.startsWith('/') ? '' : '/'}${item.url}`,
+    })),
+  };
+}
+
+/**
+ * Build WebSite schema with search functionality
+ */
+export function buildWebSiteSchema(): Record<string, unknown> {
+  return {
+    '@type': 'WebSite',
+    name: SITE_NAME,
+    url: SITE_URL,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${SITE_URL}/services?q={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+}
+
+/**
+ * Build Organization schema
+ */
+export function buildOrganizationSchema(): Record<string, unknown> {
+  return {
+    '@type': 'Organization',
+    name: SITE_NAME,
+    alternateName: 'Sovereon',
+    url: SITE_URL,
+    logo: `${SITE_URL}${DEFAULT_OG_IMAGE}`,
+    description: DEFAULT_DESCRIPTION,
+    foundingDate: '2026-02',
+    founders: [
+      {
+        '@type': 'Person',
+        name: 'Md Faizan Ashrafi',
+      },
+    ],
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: 'Bhagalpur',
+      addressRegion: 'Bihar',
+      postalCode: '812002',
+      addressCountry: 'IN',
+    },
+    contactPoint: {
+      '@type': 'ContactPoint',
+      telephone: '+91-9113156083',
+      contactType: 'customer service',
+      email: 'sovereon@sovereon.online',
+      areaServed: 'IN',
+      availableLanguage: ['English', 'Hindi'],
+    },
+    sameAs: [
+      'https://instagram.sovereon.online',
+      'https://linkedin.sovereon.online',
+      'https://facebook.sovereon.online',
+    ],
   };
 }
 

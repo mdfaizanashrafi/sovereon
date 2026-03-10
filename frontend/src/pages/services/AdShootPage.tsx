@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle, TrendingUp, Video } from 'lucide-react';
 import { serviceCategories } from '@/data/siteData';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 export function AdShootPage() {
   const service = serviceCategories
@@ -19,6 +20,24 @@ export function AdShootPage() {
     ?.services.find(s => s.id === 'ad-shoot')!;
 
   return (
+    <>
+      <SEO
+        title="Ad Shoot & Video Production"
+        description="Create stunning video advertisements from concept to final cut. Professional production team delivers cinematic-quality ads for TV, online platforms, and social media."
+        canonical="/services/ad-shoot"
+        keywords="ad production, video ads, commercial production, advertisement filming"
+        schema={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            buildServiceSchema('Ad Shoot & Video Production', 'Professional video advertisement and commercial production', '/services/ad-shoot'),
+            buildBreadcrumbSchema([
+              { name: '', url: '/' },
+              { name: '', url: '/services' },
+              { name: '', url: '/services/ad-shoot' },
+            ]),
+          ],
+        }}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
@@ -112,5 +131,6 @@ export function AdShootPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

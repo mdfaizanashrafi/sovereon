@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle, TrendingUp, Camera } from 'lucide-react';
 import { serviceCategories } from '@/data/siteData';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 export function PhotoShootPage() {
   const service = serviceCategories
@@ -19,6 +20,24 @@ export function PhotoShootPage() {
     ?.services.find(s => s.id === 'photo-shoot')!;
 
   return (
+    <>
+      <SEO
+        title="Professional Photo Shoot Services"
+        description="Professional photography that tells your brand story. From product shots to corporate headshots, we create stunning visuals that elevate your brand."
+        canonical="/services/photo-shoot"
+        keywords="photography, product photography, corporate photoshoot, commercial photography"
+        schema={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            buildServiceSchema('Professional Photo Shoot Services', 'Commercial photography and professional photoshoot services', '/services/photo-shoot'),
+            buildBreadcrumbSchema([
+              { name: '', url: '/' },
+              { name: '', url: '/services' },
+              { name: '', url: '/services/photo-shoot' },
+            ]),
+          ],
+        }}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
@@ -112,5 +131,6 @@ export function PhotoShootPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

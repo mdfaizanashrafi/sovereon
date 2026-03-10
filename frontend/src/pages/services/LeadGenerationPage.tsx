@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle, TrendingUp, Filter } from 'lucide-react';
 import { serviceCategories } from '@/data/siteData';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 export function LeadGenerationPage() {
   const service = serviceCategories
@@ -19,6 +20,24 @@ export function LeadGenerationPage() {
     ?.services.find(s => s.id === 'lead-generation')!;
 
   return (
+    <>
+      <SEO
+        title="Lead Generation Services"
+        description="Build automated funnels that attract, nurture, and convert leads into customers. AI-powered lead scoring and personalized follow-ups for maximum conversion."
+        canonical="/services/lead-generation"
+        keywords="lead generation, conversion funnels, landing pages, lead nurturing, sales funnel"
+        schema={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            buildServiceSchema('Lead Generation Services', 'AI-powered lead generation and conversion funnel optimization', '/services/lead-generation'),
+            buildBreadcrumbSchema([
+              { name: '', url: '/' },
+              { name: '', url: '/services' },
+              { name: '', url: '/services/lead-generation' },
+            ]),
+          ],
+        }}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
@@ -112,5 +131,6 @@ export function LeadGenerationPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

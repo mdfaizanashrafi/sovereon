@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import { cmsApi } from '@/services/cmsApi';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 interface Service {
   id: string;
@@ -92,7 +93,25 @@ export function DigitalMarketingSEOPage() {
   };
 
   return (
-    <div className="pt-24 pb-16">
+    <>
+      <SEO
+        title="Digital Marketing & SEO"
+        description="Data-driven marketing campaigns that bring qualified leads. SEO, social media, paid ads, and influencer marketing."
+        canonical="/services/digital-marketing-seo"
+        keywords="digital marketing, SEO, social media marketing, paid ads, lead generation"
+        schema={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            buildServiceSchema('Digital Marketing & SEO', 'Digital marketing and SEO services', '/services/digital-marketing-seo'),
+            buildBreadcrumbSchema([
+              { name: '', url: '/' },
+              { name: '', url: '/services' },
+              { name: '', url: '/services/digital-marketing-seo' },
+            ]),
+          ],
+        }}
+      />
+      <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
@@ -146,5 +165,6 @@ export function DigitalMarketingSEOPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

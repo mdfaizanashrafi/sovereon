@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle, TrendingUp, Lightbulb } from 'lucide-react';
 import { serviceCategories } from '@/data/siteData';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 export function ITConsultingTransformationPage() {
   const service = serviceCategories
@@ -19,6 +20,27 @@ export function ITConsultingTransformationPage() {
     ?.services.find(s => s.id === 'it-consulting-transformation')!;
 
   return (
+    <>
+      <SEO
+        title="IT Consulting & Digital Transformation"
+        description={service.fullDescription}
+        keywords="IT consulting, digital transformation, technology strategy, modernization"
+        canonical="/services/cloud-it-solutions/it-consulting-transformation"
+        ogType="service"
+        schema={{
+          ...buildServiceSchema(
+            service.title,
+            service.fullDescription,
+            '/services/cloud-it-solutions/it-consulting-transformation'
+          ),
+          ...buildBreadcrumbSchema([
+            { name: '', url: '/' },
+            { name: '', url: '/services' },
+            { name: '', url: '/services/cloud-it-solutions' },
+            { name: service.title, url: '/services/cloud-it-solutions/it-consulting-transformation' },
+          ]),
+        }}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
@@ -113,5 +135,6 @@ export function ITConsultingTransformationPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

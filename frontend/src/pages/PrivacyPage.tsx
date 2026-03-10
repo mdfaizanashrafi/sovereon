@@ -10,10 +10,17 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-// No icons needed for this page
+import { SEO } from '@/components/SEO';
 
 export function PrivacyPage() {
   return (
+    <>
+      <SEO
+        title="Privacy Policy"
+        description="Sovereon Inc. privacy policy. Learn how we collect, use, and protect your personal information."
+        canonical="/privacy"
+        noindex={true}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
@@ -89,5 +96,6 @@ export function PrivacyPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import { cmsApi } from '@/services/cmsApi';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 interface Service {
   id: string;
@@ -92,6 +93,24 @@ export function MaintenanceSupportPage() {
   };
 
   return (
+    <>
+      <SEO
+        title="Maintenance & Support"
+        description="24/7 web and app maintenance with AI monitoring. Keep your systems online, secure, and fast."
+        canonical="/services/maintenance-support"
+        keywords="web maintenance, app support, 24/7 monitoring, technical support"
+        schema={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            buildServiceSchema('Maintenance & Support', '24/7 web and app maintenance with AI monitoring', '/services/maintenance-support'),
+            buildBreadcrumbSchema([
+              { name: '', url: '/' },
+              { name: '', url: '/services' },
+              { name: '', url: '/services/maintenance-support' },
+            ]),
+          ],
+        }}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
@@ -146,5 +165,6 @@ export function MaintenanceSupportPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle, TrendingUp, Shield } from 'lucide-react';
 import { serviceCategories } from '@/data/siteData';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 export function OnlinePRReputationPage() {
   const service = serviceCategories
@@ -19,6 +20,24 @@ export function OnlinePRReputationPage() {
     ?.services.find(s => s.id === 'online-pr-reputation')!;
 
   return (
+    <>
+      <SEO
+        title="Online PR & Reputation Management"
+        description="Monitor, manage, and enhance your digital presence. We respond to reviews, create positive content, and protect your brand from potential crises."
+        canonical="/services/online-pr-reputation"
+        keywords="online PR, reputation management, review management, brand protection"
+        schema={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            buildServiceSchema('Online PR & Reputation Management', 'Online reputation management and brand protection services', '/services/online-pr-reputation'),
+            buildBreadcrumbSchema([
+              { name: '', url: '/' },
+              { name: '', url: '/services' },
+              { name: '', url: '/services/online-pr-reputation' },
+            ]),
+          ],
+        }}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
@@ -112,5 +131,6 @@ export function OnlinePRReputationPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

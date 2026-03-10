@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle, TrendingUp, Shield } from 'lucide-react';
 import { serviceCategories } from '@/data/siteData';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 export function WebAppMaintenancePage() {
   const service = serviceCategories
@@ -19,6 +20,27 @@ export function WebAppMaintenancePage() {
     ?.services.find(s => s.id === 'web-app-maintenance')!;
 
   return (
+    <>
+      <SEO
+        title="Web & App Maintenance"
+        description={service.fullDescription}
+        keywords="web maintenance, app support, 24/7 monitoring, system updates"
+        canonical="/services/maintenance-support/web-app-maintenance"
+        ogType="service"
+        schema={{
+          ...buildServiceSchema(
+            service.title,
+            service.fullDescription,
+            '/services/maintenance-support/web-app-maintenance'
+          ),
+          ...buildBreadcrumbSchema([
+            { name: '', url: '/' },
+            { name: '', url: '/services' },
+            { name: '', url: '/services/maintenance-support' },
+            { name: service.title, url: '/services/maintenance-support/web-app-maintenance' },
+          ]),
+        }}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
@@ -113,5 +135,6 @@ export function WebAppMaintenancePage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

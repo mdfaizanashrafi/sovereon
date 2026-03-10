@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Brain, ArrowRight, Sparkles, Bot, FileText, BarChart3 } from 'lucide-react';
 import { serviceCategories } from '@/data/siteData';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 const iconMap: Record<string, React.ElementType> = {
   'ai-seo-search': Sparkles,
@@ -24,6 +25,24 @@ export function AIServicesPage() {
   const services = category?.services || [];
 
   return (
+    <>
+      <SEO
+        title="AI Services"
+        description="Cutting-edge AI solutions including AI SEO, personalized agents, content generation, and data analytics. Transform your business with intelligent automation."
+        canonical="/services/ai-services"
+        keywords="AI services, artificial intelligence, AI agents, machine learning, Bhagalpur"
+        schema={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            buildServiceSchema('AI Services', 'AI solutions for business automation and insights', '/services/ai-services'),
+            buildBreadcrumbSchema([
+              { name: '', url: '/' },
+              { name: '', url: '/services' },
+              { name: '', url: '/services/ai-services' },
+            ]),
+          ],
+        }}
+      />
     <div className="pt-24 pb-16">
       {/* Hero Section */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-16">
@@ -98,6 +117,7 @@ export function AIServicesPage() {
         </Card>
       </section>
     </div>
+    </>
   );
 }
 

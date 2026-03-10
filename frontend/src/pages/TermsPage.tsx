@@ -10,10 +10,17 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-// No icons needed for this page
+import { SEO } from '@/components/SEO';
 
 export function TermsPage() {
   return (
+    <>
+      <SEO
+        title="Terms of Service"
+        description="Sovereon Inc. terms of service. Read our terms and conditions for using our services."
+        canonical="/terms"
+        noindex={true}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
@@ -90,5 +97,6 @@ export function TermsPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

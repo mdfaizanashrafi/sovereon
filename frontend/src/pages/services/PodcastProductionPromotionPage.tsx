@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle, TrendingUp, Radio } from 'lucide-react';
 import { serviceCategories } from '@/data/siteData';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 export function PodcastProductionPromotionPage() {
   const service = serviceCategories
@@ -19,6 +20,24 @@ export function PodcastProductionPromotionPage() {
     ?.services.find(s => s.id === 'podcast-production-promotion')!;
 
   return (
+    <>
+      <SEO
+        title="Podcast Production & Promotion"
+        description="Complete podcast solution from production to promotion. We ensure your podcast reaches its target audience and grows a loyal listener base across all major platforms."
+        canonical="/services/podcast-production-promotion"
+        keywords="podcast promotion, podcast marketing, podcast distribution"
+        schema={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            buildServiceSchema('Podcast Production & Promotion', 'Complete podcast production and marketing services', '/services/podcast-production-promotion'),
+            buildBreadcrumbSchema([
+              { name: '', url: '/' },
+              { name: '', url: '/services' },
+              { name: '', url: '/services/podcast-production-promotion' },
+            ]),
+          ],
+        }}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
@@ -112,5 +131,6 @@ export function PodcastProductionPromotionPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

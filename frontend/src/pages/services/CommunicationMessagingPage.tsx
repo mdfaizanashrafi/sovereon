@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import { cmsApi } from '@/services/cmsApi';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 interface Service {
   id: string;
@@ -92,6 +93,24 @@ export function CommunicationMessagingPage() {
   };
 
   return (
+    <>
+      <SEO
+        title="Communication & Messaging Services"
+        description="Direct messaging solutions including SMS, IVR, and email marketing. Reach customers where they are with 98% open rates."
+        canonical="/services/communication-messaging"
+        keywords="SMS marketing, bulk SMS, IVR calling, email marketing, Bhagalpur"
+        schema={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            buildServiceSchema('Communication & Messaging Services', 'Direct messaging solutions including SMS, IVR, and email marketing', '/services/communication-messaging'),
+            buildBreadcrumbSchema([
+              { name: '', url: '/' },
+              { name: '', url: '/services' },
+              { name: '', url: '/services/communication-messaging' },
+            ]),
+          ],
+        }}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
@@ -146,5 +165,6 @@ export function CommunicationMessagingPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

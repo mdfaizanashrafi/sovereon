@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import { cmsApi } from '@/services/cmsApi';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 interface Service {
   id: string;
@@ -92,7 +93,25 @@ export function CloudITSolutionsPage() {
   };
 
   return (
-    <div className="pt-24 pb-16">
+    <>
+      <SEO
+        title="Cloud & IT Solutions"
+        description="Scalable cloud infrastructure and IT consulting. Migration, hosting, and digital transformation by certified experts."
+        canonical="/services/cloud-it-solutions"
+        keywords="cloud hosting, IT consulting, digital transformation, AWS, Google Cloud"
+        schema={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            buildServiceSchema('Cloud & IT Solutions', 'Cloud infrastructure and IT consulting services', '/services/cloud-it-solutions'),
+            buildBreadcrumbSchema([
+              { name: '', url: '/' },
+              { name: '', url: '/services' },
+              { name: '', url: '/services/cloud-it-solutions' },
+            ]),
+          ],
+        }}
+      />
+      <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
@@ -146,5 +165,6 @@ export function CloudITSolutionsPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

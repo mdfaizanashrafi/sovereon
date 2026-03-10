@@ -12,14 +12,37 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle, TrendingUp, Phone } from 'lucide-react';
 import { serviceCategories } from '@/data/siteData';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 export function IVRCallingPage() {
   const service = serviceCategories
     .find(c => c.id === 'communication-messaging')
     ?.services.find(s => s.id === 'ivr-calling')!;
 
+  const serviceSchema = buildServiceSchema(
+    service.title,
+    service.fullDescription,
+    '/services/ivr-calling'
+  );
+
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: '', url: '/' },
+    { name: '', url: '/services' },
+    { name: '', url: '/services/communication-messaging' },
+    { name: service.title, url: '/services/ivr-calling' },
+  ]);
+
   return (
-    <div className="pt-24 pb-16">
+    <>
+      <SEO
+        title={service.title}
+        description={service.fullDescription}
+        keywords="IVR calling, voice calls, automated calls, promotional calls"
+        canonical="/services/ivr-calling"
+        ogType="service"
+        schema={{ '@graph': [serviceSchema, breadcrumbSchema] }}
+      />
+      <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
           <Link to="/services" className="hover:text-primary transition-colors">Services</Link>
@@ -113,5 +136,6 @@ export function IVRCallingPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Briefcase, MapPin, Clock, ArrowRight, Users, Sparkles } from 'lucide-react';
+import { SEO } from '@/components/SEO';
 
 const openings = [
   {
@@ -36,6 +37,12 @@ const openings = [
 
 export function CareersPage() {
   return (
+    <>
+      <SEO
+        title="Careers"
+        description="Join Sovereon Inc. We're hiring digital marketing specialists, developers, and content creators. Based in Bhagalpur, Bihar."
+        canonical="/careers"
+      />
     <div className="pt-24 pb-16">
       {/* Hero Section */}
       <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-16">
@@ -128,5 +135,6 @@ export function CareersPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

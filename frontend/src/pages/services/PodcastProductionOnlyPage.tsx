@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle, TrendingUp, Mic } from 'lucide-react';
 import { serviceCategories } from '@/data/siteData';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 export function PodcastProductionOnlyPage() {
   const service = serviceCategories
@@ -19,6 +20,24 @@ export function PodcastProductionOnlyPage() {
     ?.services.find(s => s.id === 'podcast-production-only')!;
 
   return (
+    <>
+      <SEO
+        title="Podcast Production Services"
+        description="Professional podcast production from studio-quality recording to polished editing. We handle the technical details so you can focus on creating great content."
+        canonical="/services/podcast-production-only"
+        keywords="podcast production, audio editing, podcast recording, show notes"
+        schema={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            buildServiceSchema('Podcast Production Services', 'Professional podcast production and audio editing services', '/services/podcast-production-only'),
+            buildBreadcrumbSchema([
+              { name: '', url: '/' },
+              { name: '', url: '/services' },
+              { name: '', url: '/services/podcast-production-only' },
+            ]),
+          ],
+        }}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
@@ -112,5 +131,6 @@ export function PodcastProductionOnlyPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

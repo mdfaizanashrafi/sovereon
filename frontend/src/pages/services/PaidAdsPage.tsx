@@ -12,14 +12,38 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle, TrendingUp, DollarSign } from 'lucide-react';
 import { serviceCategories } from '@/data/siteData';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 export function PaidAdsPage() {
   const service = serviceCategories
     .find(c => c.id === 'digital-marketing-seo')
     ?.services.find(s => s.id === 'paid-ads')!;
 
+  const serviceSchema = buildServiceSchema(
+    service.title,
+    service.fullDescription,
+    '/services/digital-marketing-seo/paid-ads'
+  );
+
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Services', url: '/services' },
+    { name: 'Digital Marketing & SEO', url: '/services/digital-marketing-seo' },
+    { name: 'Paid Ads', url: '/services/digital-marketing-seo/paid-ads' },
+  ]);
+
   return (
-    <div className="pt-24 pb-16">
+    <>
+      <SEO
+        title={`${service.title} - AI-Advanced PPC Services | Sovereon`}
+        description={service.fullDescription}
+        keywords="paid ads, Google Ads, Meta Ads, LinkedIn Ads, PPC advertising"
+        schema={{
+          '@context': 'https://schema.org',
+          '@graph': [serviceSchema, breadcrumbSchema]
+        }}
+      />
+      <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
           <Link to="/services" className="hover:text-primary transition-colors">Services</Link>
@@ -112,5 +136,6 @@ export function PaidAdsPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

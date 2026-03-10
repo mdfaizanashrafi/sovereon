@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import { cmsApi } from '@/services/cmsApi';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 interface Service {
   id: string;
@@ -92,7 +93,25 @@ export function ContentMediaProductionPage() {
   };
 
   return (
-    <div className="pt-24 pb-16">
+    <>
+      <SEO
+        title="Content & Media Production"
+        description="Studio-quality podcasts, photography, and video production. Professional content that elevates your brand."
+        canonical="/services/content-media-production"
+        keywords="content production, podcast production, video production, photography, ad shoots"
+        schema={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            buildServiceSchema('Content & Media Production', 'Content and media production services', '/services/content-media-production'),
+            buildBreadcrumbSchema([
+              { name: '', url: '/' },
+              { name: '', url: '/services' },
+              { name: '', url: '/services/content-media-production' },
+            ]),
+          ],
+        }}
+      />
+      <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
@@ -146,5 +165,6 @@ export function ContentMediaProductionPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

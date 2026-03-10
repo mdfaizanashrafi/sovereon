@@ -12,6 +12,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle, TrendingUp, Server } from 'lucide-react';
 import { serviceCategories } from '@/data/siteData';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 export function CloudSolutionsHostingPage() {
   const service = serviceCategories
@@ -19,6 +20,27 @@ export function CloudSolutionsHostingPage() {
     ?.services.find(s => s.id === 'cloud-solutions-hosting')!;
 
   return (
+    <>
+      <SEO
+        title="Cloud Solutions & Hosting"
+        description={service.fullDescription}
+        keywords="cloud hosting, AWS, Google Cloud, Azure, scalable hosting"
+        canonical="/services/cloud-it-solutions/cloud-solutions-hosting"
+        ogType="service"
+        schema={{
+          ...buildServiceSchema(
+            service.title,
+            service.fullDescription,
+            '/services/cloud-it-solutions/cloud-solutions-hosting'
+          ),
+          ...buildBreadcrumbSchema([
+            { name: '', url: '/' },
+            { name: '', url: '/services' },
+            { name: '', url: '/services/cloud-it-solutions' },
+            { name: service.title, url: '/services/cloud-it-solutions/cloud-solutions-hosting' },
+          ]),
+        }}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
@@ -112,5 +134,6 @@ export function CloudSolutionsHostingPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }

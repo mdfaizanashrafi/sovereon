@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, CheckCircle } from 'lucide-react';
 import { cmsApi } from '@/services/cmsApi';
 import { Skeleton } from '@/components/ui/skeleton';
+import { SEO, buildServiceSchema, buildBreadcrumbSchema } from '@/components/SEO';
 
 interface Service {
   id: string;
@@ -92,6 +93,24 @@ export function SoftwareAppDevelopmentPage() {
   };
 
   return (
+    <>
+      <SEO
+        title="Software & App Development"
+        description="Custom software, mobile apps, and web development. Build solutions that solve real business problems."
+        canonical="/services/software-app-development"
+        keywords="software development, mobile apps, web development, custom software, Bhagalpur"
+        schema={{
+          '@context': 'https://schema.org',
+          '@graph': [
+            buildServiceSchema('Software & App Development', 'Custom software, mobile apps, and web development solutions', '/services/software-app-development'),
+            buildBreadcrumbSchema([
+              { name: '', url: '/' },
+              { name: '', url: '/services' },
+              { name: '', url: '/services/software-app-development' },
+            ]),
+          ],
+        }}
+      />
     <div className="pt-24 pb-16">
       <section className="container mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb */}
@@ -146,5 +165,6 @@ export function SoftwareAppDevelopmentPage() {
         </div>
       </section>
     </div>
+    </>
   );
 }
