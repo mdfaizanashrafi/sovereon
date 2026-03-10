@@ -1,19 +1,16 @@
 import express, { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { RepositoryFactory } from '../repositories';
 import { authMiddleware, asyncHandler } from '../middleware/auth';
 import { formatResponse } from '../utils/errors';
 
 const router = express.Router();
-const prisma = new PrismaClient();
+const subscriptionRepository = RepositoryFactory.getSubscriptionRepository();
+const serviceRepository = RepositoryFactory.getServiceRepository();
 
 // Get user's subscriptions
 router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
   const userId = (req.user as any)?.userId || (req.user as any)?.id;
-  const subscriptions = await prisma.subscription.findMany({
-    where: { userId },
-    include: { service: true },
-    orderBy: { createdAt: 'desc' }
-  });
+  const subscriptions = await subscriptionRepository.findByUserId(userId);
   res.json(formatResponse(true, subscriptions));
 }));
 
@@ -21,24 +18,18 @@ router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response)
 router.post('/', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
   const { serviceId, planName, price, billingCycle = 'monthly' } = req.body;
   
-  const service = await prisma.service.findUnique({ where: { id: serviceId } });
+  const service = await serviceRepository.findById(serviceId);
   if (!service) {
     return res.status(404).json(formatResponse(false, undefined, { code: 'NOT_FOUND', message: 'Service not found' }));
   }
 
   const userId = (req.user as any)?.userId || (req.user as any)?.id;
-  const subscription = await prisma.subscription.create({
-    data: {
-      userId,
-      serviceId,
-      planName: planName || service.name,
-      price: price || service.basePrice,
-      billingCycle,
-      status: 'active',
-      currentPeriodStart: new Date(),
-      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
-    },
-    include: { service: true },
+  const subscription = await subscriptionRepository.createSubscription({
+    userId,
+    serviceId,
+    planName: planName || service.name,
+    price: price || service.basePrice,
+    billingCycle,
   });
 
   res.status(201).json(formatResponse(true, subscription));
@@ -47,17 +38,13 @@ router.post('/', authMiddleware, asyncHandler(async (req: Request, res: Response
 // Cancel subscription
 router.post('/:id/cancel', authMiddleware, asyncHandler(async (req: Request, res: Response) => {
   const userId = (req.user as any)?.userId || (req.user as any)?.id;
-  const subscription = await prisma.subscription.findUnique({ where: { id: req.params.id } });
+  const subscription = await subscriptionRepository.findById(req.params.id);
   
   if (!subscription || subscription.userId !== userId) {
     return res.status(404).json(formatResponse(false, undefined, { code: 'NOT_FOUND', message: 'Subscription not found' }));
   }
 
-  const updated = await prisma.subscription.update({
-    where: { id: req.params.id },
-    data: { status: 'cancelled', cancelledAt: new Date() },
-    include: { service: true },
-  });
+  const updated = await subscriptionRepository.cancel(req.params.id);
 
   res.json(formatResponse(true, updated));
 }));

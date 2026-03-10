@@ -1,10 +1,10 @@
 import express, { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { RepositoryFactory } from '../repositories';
 import { authMiddleware, asyncHandler } from '../middleware/auth';
 import { formatResponse } from '../utils/errors';
 
 const router = express.Router();
-const prisma = new PrismaClient();
+const userRepository = RepositoryFactory.getUserRepository();
 
 /**
  * Get all users (admin only)
@@ -16,18 +16,7 @@ router.get('/', authMiddleware, asyncHandler(async (req: Request, res: Response)
     return res.status(403).json(formatResponse(false, undefined, { code: 'FORBIDDEN', message: 'Admin only' }));
   }
   
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      companyName: true,
-      role: true,
-      status: true,
-      createdAt: true,
-    }
-  });
+  const users = await userRepository.findAllForAdmin();
   res.json(formatResponse(true, users));
 }));
 

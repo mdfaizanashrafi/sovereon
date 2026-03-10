@@ -1,0 +1,292 @@
+name: Load Testing
+
+on:
+  # Run smoke tests on every PR
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - 'load-testing/**'
+      - '.github/workflows/load-test.yml'
+
+  # Run load tests before release
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+
+  # Run on schedule (every Sunday at 2 AM)
+  schedule:
+    - cron: '0 2 * * 0'
+
+  # Allow manual trigger
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Test type to run'
+        required: true
+        default: 'smoke'
+        type: choice
+        options:
+          - smoke
+          - load
+          - stress
+          - spike
+          - endurance
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - local
+          - staging
+          - production
+
+env:
+  K6_VERSION: 'v0.48.0'
+
+jobs:
+  # ==========================================================================
+  # SMOKE TEST (Quick health check)
+  # ==========================================================================
+  smoke-test:
+    name: Smoke Test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+        with:
+          k6-version: ${{ env.K6_VERSION }}
+
+      - name: Start services (if local)
+        if: github.event.inputs.environment == 'local' || github.event_name == 'pull_request'
+        run: |
+          # Start backend service for testing
+          cd backend
+          npm ci
+          npm run build
+          npm start &
+          sleep 10
+          # Wait for service to be ready
+          timeout 30 bash -c 'until curl -f http://localhost:3000/api/health; do sleep 1; done'
+
+      - name: Run smoke test
+        run: |
+          k6 run \
+            --env ENV=${{ github.event.inputs.environment || 'local' }} \
+            --env BASE_URL=${{ github.event.inputs.environment == 'staging' && 'https://api-staging.sovereon.online' || 'http://localhost:3000' }} \
+            --summary-export=smoke-test-results.json \
+            load-testing/k6/scenarios/api-smoke-test.js
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: smoke-test-results
+          path: |
+            smoke-test-results.json
+            *.log
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('smoke-test-results.json', 'utf8'));
+            
+            const metrics = results.metrics;
+            const httpReqDuration = metrics.http_req_duration;
+            const httpReqFailed = metrics.http_req_failed;
+            
+            const body = `## 🧪 Smoke Test Results
+            
+| Metric | Value |
+|--------|-------|
+| **Requests** | ${metrics.http_reqs.values.count} |
+| **Failed** | ${(httpReqFailed.values.rate * 100).toFixed(2)}% |
+| **Avg Response** | ${httpReqDuration.values.avg.toFixed(2)}ms |
+| **P95 Response** | ${httpReqDuration.values['p(95)'].toFixed(2)}ms |
+| **Duration** | ${results.state.testRunDuration} |
+            
+            ${httpReqFailed.values.rate > 0.01 ? '⚠️ **Warning:** Error rate exceeds 1%' : '✅ All checks passed'}
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+  # ==========================================================================
+  # LOAD TEST (Before release)
+  # ==========================================================================
+  load-test:
+    name: Load Test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+        with:
+          k6-version: ${{ env.K6_VERSION }}
+
+      - name: Run load test
+        run: |
+          k6 run \
+            --env ENV=staging \
+            --env BASE_URL=${{ secrets.API_BASE_URL_STAGING }} \
+            --env ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }} \
+            --env ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }} \
+            --out json=load-test-results.json \
+            --summary-export=load-test-summary.json \
+            load-testing/k6/scenarios/api-load-test.js
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: load-test-results
+          path: |
+            load-test-results.json
+            load-test-summary.json
+            *.log
+
+      - name: Check performance regression
+        run: |
+          # Compare with baseline if available
+          # This would typically compare against previous runs
+          echo "Checking for performance regression..."
+          
+          # Parse results and check thresholds
+          node -e "
+            const results = require('./load-test-summary.json');
+            const p95 = results.metrics.http_req_duration.values['p(95)'];
+            const errorRate = results.metrics.http_req_failed.values.rate;
+            
+            console.log('P95 Response Time:', p95, 'ms');
+            console.log('Error Rate:', (errorRate * 100).toFixed(2), '%');
+            
+            if (p95 > 200) {
+              console.error('❌ Performance regression detected: P95 > 200ms');
+              process.exit(1);
+            }
+            
+            if (errorRate > 0.001) {
+              console.error('❌ Error rate too high: > 0.1%');
+              process.exit(1);
+            }
+            
+            console.log('✅ Performance within acceptable limits');
+          "
+
+  # ==========================================================================
+  # SCHEDULED STRESS TEST (Weekly)
+  # ==========================================================================
+  stress-test:
+    name: Stress Test
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 2 * * 0'
+    environment: staging
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+        with:
+          k6-version: ${{ env.K6_VERSION }}
+
+      - name: Run stress test
+        run: |
+          k6 run \
+            --env ENV=staging \
+            --env BASE_URL=${{ secrets.API_BASE_URL_STAGING }} \
+            --out json=stress-test-results.json \
+            --summary-export=stress-test-summary.json \
+            load-testing/k6/scenarios/api-stress-test.js
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stress-test-results
+          path: |
+            stress-test-results.json
+            stress-test-summary.json
+
+      - name: Create issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Scheduled Stress Test Failed',
+              body: `The weekly stress test failed on ${new Date().toISOString()}.\n\nPlease check the [Actions run](${context.payload.repository.html_url}/actions/runs/${context.runId}) for details.`,
+              labels: ['performance', 'alert']
+            });
+
+  # ==========================================================================
+  # MANUAL TEST
+  # ==========================================================================
+  manual-test:
+    name: Manual Test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    environment: ${{ github.event.inputs.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+        with:
+          k6-version: ${{ env.K6_VERSION }}
+
+      - name: Run ${{ github.event.inputs.test_type }} test
+        run: |
+          TEST_TYPE=${{ github.event.inputs.test_type }}
+          ENV=${{ github.event.inputs.environment }}
+          
+          # Set base URL based on environment
+          if [ "$ENV" = "production" ]; then
+            BASE_URL=${{ secrets.API_BASE_URL_PRODUCTION }}
+          elif [ "$ENV" = "staging" ]; then
+            BASE_URL=${{ secrets.API_BASE_URL_STAGING }}
+          else
+            BASE_URL="http://localhost:3000"
+          fi
+          
+          k6 run \
+            --env ENV=$ENV \
+            --env BASE_URL=$BASE_URL \
+            --env ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }} \
+            --env ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }} \
+            --out json=${TEST_TYPE}-test-results.json \
+            --summary-export=${TEST_TYPE}-test-summary.json \
+            load-testing/k6/scenarios/api-${TEST_TYPE}-test.js
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ github.event.inputs.test_type }}-test-results
+          path: |
+            ${{ github.event.inputs.test_type }}-test-results.json
+            ${{ github.event.inputs.test_type }}-test-summary.json

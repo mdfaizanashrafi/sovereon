@@ -1,66 +1,70 @@
 /**
- * Public API Routes
+ * ============================================================================
+ * PUBLIC API ROUTES
+ * ============================================================================
  * Provides public access to CMS content for the website
+ * Refactored to use CRUD Route Factory
+ * 
+ * @version 2.0.0 - Using CRUD Factory
  */
 
 import express, { Request, Response } from 'express';
 import { asyncHandler } from '../middleware/auth';
 import * as cmsService from '../services/cms.service';
+import { createPublicRoutes } from '../factories/CrudRouteFactory';
+import {
+  TeamMemberService,
+  ServiceCategoryService,
+  TestimonialService,
+  FAQService,
+  ServiceCMSService,
+} from '../services/cms-services';
 
 const router = express.Router();
 
 // ============================================================================
-// TEAM MEMBERS
+// CRUD ROUTES - Using Factory (Read-only)
 // ============================================================================
 
-router.get(
-  '/team-members',
-  asyncHandler(async (_req: Request, res: Response) => {
-    const result = await cmsService.getActiveTeamMembers();
-    res.json(result);
-  })
-);
+// Team Members
+router.use(createPublicRoutes(
+  { path: 'team-members' },
+  TeamMemberService
+));
+
+// Service Categories
+router.use(createPublicRoutes(
+  { path: 'service-categories' },
+  ServiceCategoryService
+));
+
+// Services (with slug lookup)
+router.use(createPublicRoutes(
+  { 
+    path: 'services',
+    enableSlugLookup: true,
+    slugParam: 'slug'
+  },
+  ServiceCMSService
+));
+
+// Testimonials
+router.use(createPublicRoutes(
+  { path: 'testimonials' },
+  TestimonialService
+));
+
+// FAQs
+router.use(createPublicRoutes(
+  { path: 'faqs' },
+  FAQService
+));
 
 // ============================================================================
-// SERVICE CATEGORIES
+// MANUAL ROUTES - Complex operations
 // ============================================================================
 
-router.get(
-  '/service-categories',
-  asyncHandler(async (_req: Request, res: Response) => {
-    const result = await cmsService.getActiveServiceCategories();
-    res.json(result);
-  })
-);
-
-// ============================================================================
-// TESTIMONIALS
-// ============================================================================
-
-router.get(
-  '/testimonials',
-  asyncHandler(async (_req: Request, res: Response) => {
-    const result = await cmsService.getActiveTestimonials();
-    res.json(result);
-  })
-);
-
-// ============================================================================
-// FAQS
-// ============================================================================
-
-router.get(
-  '/faqs',
-  asyncHandler(async (_req: Request, res: Response) => {
-    const result = await cmsService.getActiveFAQs();
-    res.json(result);
-  })
-);
-
-// ============================================================================
-// PAGE CONTENT
-// ============================================================================
-
+// Page Content
 router.get(
   '/page-content/:page/:section',
   asyncHandler(async (req: Request, res: Response) => {
@@ -70,10 +74,7 @@ router.get(
   })
 );
 
-// ============================================================================
-// GLOBAL SETTINGS
-// ============================================================================
-
+// Global Settings
 router.get(
   '/settings',
   asyncHandler(async (_req: Request, res: Response) => {
@@ -82,10 +83,7 @@ router.get(
   })
 );
 
-// ============================================================================
-// CURRENT PROJECTS
-// ============================================================================
-
+// Current Projects
 router.get(
   '/current-projects',
   asyncHandler(async (_req: Request, res: Response) => {
@@ -94,10 +92,7 @@ router.get(
   })
 );
 
-// ============================================================================
-// FUTURE QUESTS
-// ============================================================================
-
+// Future Quests
 router.get(
   '/future-quests',
   asyncHandler(async (_req: Request, res: Response) => {
@@ -106,10 +101,7 @@ router.get(
   })
 );
 
-// ============================================================================
-// CASE STUDIES
-// ============================================================================
-
+// Case Studies
 router.get(
   '/case-studies',
   asyncHandler(async (_req: Request, res: Response) => {
@@ -126,10 +118,7 @@ router.get(
   })
 );
 
-// ============================================================================
-// BLOG POSTS
-// ============================================================================
-
+// Blog Posts
 router.get(
   '/blog-posts',
   asyncHandler(async (_req: Request, res: Response) => {

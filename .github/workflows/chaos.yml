@@ -1,0 +1,392 @@
+name: Chaos Engineering - Weekly Resilience Tests
+
+on:
+  schedule:
+    # Run every Sunday at 2 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - development
+      tests:
+        description: 'Tests to run (comma-separated or "all")'
+        required: true
+        default: 'all'
+      duration:
+        description: 'Base duration for each experiment'
+        required: true
+        default: '30s'
+
+concurrency:
+  group: chaos-tests
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '20'
+  CHAOS_API_URL_STAGING: ${{ secrets.CHAOS_API_URL_STAGING }}
+  CHAOS_API_URL_DEV: ${{ secrets.CHAOS_API_URL_DEV }}
+
+jobs:
+  # ============================================================================
+  # Pre-flight Checks
+  # ============================================================================
+  preflight:
+    name: Pre-flight Safety Checks
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+      environment: ${{ steps.env.outputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine environment
+        id: env
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+          else
+            echo "environment=staging" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Check environment readiness
+        id: check
+        run: |
+          ENVIRONMENT="${{ steps.env.outputs.environment }}"
+          
+          # Block production runs
+          if [ "$ENVIRONMENT" = "production" ] || [ "$ENVIRONMENT" = "prod" ]; then
+            echo "::error::Chaos tests are not allowed in production!"
+            echo "should_run=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+          echo "should_run=true" >> $GITHUB_OUTPUT
+          echo "Environment: $ENVIRONMENT"
+
+  # ============================================================================
+  # Health Check
+  # ============================================================================
+  health-check:
+    name: System Health Verification
+    runs-on: ubuntu-latest
+    needs: preflight
+    if: needs.preflight.outputs.should_run == 'true'
+    steps:
+      - name: Check target system health
+        run: |
+          ENVIRONMENT="${{ needs.preflight.outputs.environment }}"
+          
+          if [ "$ENVIRONMENT" = "staging" ]; then
+            API_URL="${CHAOS_API_URL_STAGING:-https://api-staging.sovereon.com}"
+          else
+            API_URL="${CHAOS_API_URL_DEV:-http://localhost:5000}"
+          fi
+          
+          echo "Checking health at: $API_URL"
+          
+          # Check main health endpoint
+          HEALTH_STATUS=$(curl -sf "${API_URL}/api/health/detailed" || echo '{"status":"unhealthy"}')
+          
+          if echo "$HEALTH_STATUS" | grep -q '"status":"healthy"'; then
+            echo "::notice::System health check passed"
+          elif echo "$HEALTH_STATUS" | grep -q '"status":"degraded"'; then
+            echo "::warning::System is in degraded state - proceeding with caution"
+          else
+            echo "::error::System is unhealthy - aborting chaos tests"
+            exit 1
+          fi
+          
+          # Verify chaos endpoints are available
+          CHAOS_STATUS=$(curl -sf "${API_URL}/api/chaos/experiments" || echo '{"success":false}')
+          
+          if ! echo "$CHAOS_STATUS" | grep -q '"success":true'; then
+            echo "::error::Chaos engineering endpoints not available"
+            exit 1
+          fi
+          
+          echo "::notice::Chaos endpoints verified"
+
+  # ============================================================================
+  # Chaos Tests
+  # ============================================================================
+  chaos-tests:
+    name: Run Chaos Experiments
+    runs-on: ubuntu-latest
+    needs: [preflight, health-check]
+    if: needs.preflight.outputs.should_run == 'true'
+    environment: chaos-testing
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
+      - name: Run Chaos Test Suite
+        id: chaos
+        run: |
+          ENVIRONMENT="${{ needs.preflight.outputs.environment }}"
+          TESTS="${{ github.event.inputs.tests || 'all' }}"
+          DURATION="${{ github.event.inputs.duration || '30s' }}"
+          
+          if [ "$ENVIRONMENT" = "staging" ]; then
+            export CHAOS_API_URL="${CHAOS_API_URL_STAGING:-https://api-staging.sovereon.com}"
+          else
+            export CHAOS_API_URL="${CHAOS_API_URL_DEV:-http://localhost:5000}"
+          fi
+          
+          echo "Running chaos tests..."
+          echo "Environment: $ENVIRONMENT"
+          echo "Tests: $TESTS"
+          echo "Duration: $DURATION"
+          echo "API URL: $CHAOS_API_URL"
+          
+          # Make script executable and run
+          chmod +x scripts/chaos-test.sh
+          ./scripts/chaos-test.sh \
+            -e "$ENVIRONMENT" \
+            -t "$TESTS" \
+            -d "$DURATION" \
+            -o ./chaos-reports \
+            --ci \
+            -v
+        continue-on-error: true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-test-results
+          path: chaos-reports/
+          retention-days: 30
+
+      - name: Parse results
+        id: results
+        run: |
+          if [ -f chaos-reports/*.json ]; then
+            LATEST_REPORT=$(ls -t chaos-reports/*.json | head -1)
+            echo "report_file=$LATEST_REPORT" >> $GITHUB_OUTPUT
+            
+            if command -v jq &> /dev/null; then
+              PASSED=$(jq -r '.summary.passed // 0' "$LATEST_REPORT")
+              FAILED=$(jq -r '.summary.failed // 0' "$FAILED_REPORT")
+              TOTAL=$(jq -r '.summary.totalTests // 0' "$LATEST_REPORT")
+              PASS_RATE=$(jq -r '.summary.passRate // 0' "$LATEST_REPORT")
+              
+              echo "passed=$PASSED" >> $GITHUB_OUTPUT
+              echo "failed=$FAILED" >> $GITHUB_OUTPUT
+              echo "total=$TOTAL" >> $GITHUB_OUTPUT
+              echo "pass_rate=$PASS_RATE" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Evaluate results
+        run: |
+          PASS_RATE="${{ steps.results.outputs.pass_rate }}"
+          
+          if [ -z "$PASS_RATE" ] || [ "$PASS_RATE" = "null" ]; then
+            echo "::error::Could not determine test results"
+            exit 1
+          fi
+          
+          echo "Pass rate: $PASS_RATE%"
+          
+          if [ "$PASS_RATE" -lt 50 ]; then
+            echo "::error::Resilience score too low: $PASS_RATE% (minimum: 50%)"
+            exit 1
+          elif [ "$PASS_RATE" -lt 70 ]; then
+            echo "::warning::Resilience score below target: $PASS_RATE% (target: 70%)"
+          else
+            echo "::notice::Resilience score acceptable: $PASS_RATE%"
+          fi
+
+  # ============================================================================
+  # Post-test Verification
+  # ============================================================================
+  post-verification:
+    name: Post-test System Verification
+    runs-on: ubuntu-latest
+    needs: [chaos-tests, preflight]
+    if: always() && needs.preflight.outputs.should_run == 'true'
+    steps:
+      - name: Verify system recovery
+        run: |
+          ENVIRONMENT="${{ needs.preflight.outputs.environment }}"
+          
+          if [ "$ENVIRONMENT" = "staging" ]; then
+            API_URL="${CHAOS_API_URL_STAGING:-https://api-staging.sovereon.com}"
+          else
+            API_URL="${CHAOS_API_URL_DEV:-http://localhost:5000}"
+          fi
+          
+          # Wait for potential recovery
+          sleep 30
+          
+          # Verify all experiments stopped
+          STATUS=$(curl -sf "${API_URL}/api/chaos/status" || echo '{"running":true}')
+          
+          if echo "$STATUS" | grep -q '"running":true'; then
+            echo "::warning::Some experiments may still be running - stopping them"
+            curl -sf -X POST "${API_URL}/api/chaos/stop" || true
+            sleep 10
+          fi
+          
+          # Final health check
+          HEALTH=$(curl -sf "${API_URL}/api/health/detailed" || echo '{"status":"unhealthy"}')
+          
+          if echo "$HEALTH" | grep -q '"status":"unhealthy"'; then
+            echo "::error::System did not recover properly!"
+            exit 1
+          fi
+          
+          echo "::notice::System recovered successfully"
+
+  # ============================================================================
+  # Slack Notification
+  # ============================================================================
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: [chaos-tests, post-verification, preflight]
+    if: always() && needs.preflight.outputs.should_run == 'true'
+    steps:
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-test-results
+          path: chaos-reports/
+
+      - name: Prepare notification
+        id: notify
+        run: |
+          if [ -f chaos-reports/*.json ]; then
+            LATEST_REPORT=$(ls -t chaos-reports/*.json | head -1)
+            
+            if command -v jq &> /dev/null; then
+              PASSED=$(jq -r '.summary.passed // 0' "$LATEST_REPORT")
+              FAILED=$(jq -r '.summary.failed // 0' "$LATEST_REPORT")
+              TOTAL=$(jq -r '.summary.totalTests // 0' "$LATEST_REPORT")
+              PASS_RATE=$(jq -r '.summary.passRate // 0' "$LATEST_REPORT")
+              ENVIRONMENT=$(jq -r '.environment // "unknown"' "$LATEST_REPORT")
+              
+              # Determine color based on pass rate
+              if [ "$PASS_RATE" -ge 80 ]; then
+                COLOR="good"
+              elif [ "$PASS_RATE" -ge 50 ]; then
+                COLOR="warning"
+              else
+                COLOR="danger"
+              fi
+              
+              # Build Slack message
+              cat > slack-payload.json << EOF
+          {
+            "attachments": [
+              {
+                "color": "$COLOR",
+                "title": "Chaos Engineering Test Results",
+                "title_link": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                "fields": [
+                  {"title": "Environment", "value": "$ENVIRONMENT", "short": true},
+                  {"title": "Status", "value": "${{ needs.chaos-tests.result }}", "short": true},
+                  {"title": "Pass Rate", "value": "${PASS_RATE}%", "short": true},
+                  {"title": "Total Tests", "value": "$TOTAL", "short": true},
+                  {"title": "Passed", "value": "$PASSED", "short": true},
+                  {"title": "Failed", "value": "$FAILED", "short": true}
+                ],
+                "footer": "Sovereon Chaos Engineering",
+                "ts": $(date +%s)
+              }
+            ]
+          }
+          EOF
+              
+              echo "payload_file=slack-payload.json" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Send Slack notification
+        if: steps.notify.outputs.payload_file != '' && secrets.SLACK_CHAOS_WEBHOOK != ''
+        run: |
+          curl -sf -X POST \
+            -H "Content-Type: application/json" \
+            -d @${{ steps.notify.outputs.payload_file }} \
+            "${{ secrets.SLACK_CHAOS_WEBHOOK }}" || echo "Failed to send Slack notification"
+
+  # ============================================================================
+  # Update Resilience Score
+  # ============================================================================
+  update-score:
+    name: Update Resilience Score
+    runs-on: ubuntu-latest
+    needs: [chaos-tests, preflight]
+    if: github.event_name == 'schedule' && needs.preflight.outputs.should_run == 'true'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          name: chaos-test-results
+          path: chaos-reports/
+
+      - name: Update resilience badge
+        run: |
+          if [ -f chaos-reports/*.json ] && command -v jq &> /dev/null; then
+            LATEST_REPORT=$(ls -t chaos-reports/*.json | head -1)
+            PASS_RATE=$(jq -r '.summary.passRate // 0' "$LATEST_REPORT")
+            
+            # Update SYSTEM_STATUS.md with latest score
+            if [ -f SYSTEM_STATUS.md ]; then
+              sed -i "s/Resilience Score: .*/Resilience Score: ${PASS_RATE}% $(date '+%Y-%m-%d')/" SYSTEM_STATUS.md
+              
+              git config user.name "GitHub Actions"
+              git config user.email "actions@github.com"
+              git add SYSTEM_STATUS.md
+              git commit -m "Update resilience score: ${PASS_RATE}%" || echo "No changes to commit"
+              git push || echo "Failed to push"
+            fi
+          fi
+
+  # ============================================================================
+  # Summary
+  # ============================================================================
+  summary:
+    name: Generate Summary
+    runs-on: ubuntu-latest
+    needs: [chaos-tests, preflight]
+    if: always() && needs.preflight.outputs.should_run == 'true'
+    steps:
+      - name: Generate job summary
+        run: |
+          echo "## Chaos Engineering Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Environment | ${{ needs.preflight.outputs.environment }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Status | ${{ needs.chaos-tests.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.chaos-tests.result }}" = "success" ]; then
+            echo "✅ Chaos tests completed successfully" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.chaos-tests.result }}" = "failure" ]; then
+            echo "❌ Chaos tests failed - review the results" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Chaos tests were skipped or cancelled" >> $GITHUB_STEP_SUMMARY
+          fi

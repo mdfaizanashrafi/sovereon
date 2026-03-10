@@ -2,15 +2,40 @@
  * Seed API Route
  * Provides HTTP endpoint to trigger database seeding
  * Safe to call multiple times (idempotent)
+ * 
+ * ⚠️ DEVELOPMENT ONLY - Disabled in production
  */
 
 import express, { Request, Response } from 'express';
+
+// Disable in production
+if (process.env.NODE_ENV === 'production') {
+  console.warn('[Seed Routes] ⚠️ Seeding is disabled in production');
+}
 import { asyncHandler } from '../middleware/auth';
 import { PrismaClient } from '@prisma/client';
 import bcryptjs from 'bcryptjs';
 
+// Production guard middleware
+const checkProduction = (req: Request, res: Response, next: Function) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({
+      success: false,
+      error: {
+        code: 'FORBIDDEN',
+        message: 'Seed routes are disabled in production'
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
+  next();
+};
+
 const router = express.Router();
 const prisma = new PrismaClient();
+
+// Apply production guard to all routes in this router
+router.use(checkProduction);
 
 // Simple secret check (you can change this)
 const SEED_SECRET = process.env.SEED_SECRET || 'seed-me-now';

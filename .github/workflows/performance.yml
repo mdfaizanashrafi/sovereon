@@ -1,0 +1,474 @@
+name: Performance Regression Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+
+concurrency:
+  group: performance-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  PERFORMANCE_DEGRADATION_THRESHOLD: 10  # Percentage
+  BUNDLE_SIZE_THRESHOLD: 512000          # 500KB in bytes
+  API_RESPONSE_THRESHOLD: 100            # milliseconds
+
+jobs:
+  # ============================================================
+  # Backend Performance Benchmarks
+  # ============================================================
+  backend-performance:
+    name: Backend Performance
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: sovereon_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+
+      - name: Checkout main branch for baseline
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: baseline
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-backend-node-${{ hashFiles('backend/package-lock.json') }}
+
+      - name: Install dependencies (PR)
+        working-directory: backend
+        run: npm ci
+
+      - name: Install dependencies (Baseline)
+        working-directory: baseline/backend
+        run: npm ci
+
+      - name: Setup test database
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/sovereon_test
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+
+      - name: Run performance benchmarks (PR)
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/sovereon_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+          PORT: 5001
+        run: |
+          # Start server in background
+          npm run dev &
+          SERVER_PID=$!
+          
+          # Wait for server
+          for i in {1..30}; do
+            if curl -sf http://localhost:5001/api/health; then
+              break
+            fi
+            sleep 1
+          done
+          
+          # Run benchmarks
+          npm run benchmark:run || npx ts-node src/performance/benchmarks.ts
+          
+          # Stop server
+          kill $SERVER_PID || true
+          
+          # Save results
+          mv benchmark-results.json ../pr-results.json || echo "{}" > ../pr-results.json
+
+      - name: Run performance benchmarks (Baseline)
+        working-directory: baseline/backend
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/sovereon_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+          PORT: 5002
+        run: |
+          # Start server in background
+          npm run dev &
+          SERVER_PID=$!
+          
+          # Wait for server
+          for i in {1..30}; do
+            if curl -sf http://localhost:5002/api/health; then
+              break
+            fi
+            sleep 1
+          done
+          
+          # Run benchmarks
+          npm run benchmark:run || npx ts-node src/performance/benchmarks.ts
+          
+          # Stop server
+          kill $SERVER_PID || true
+          
+          # Save results
+          mv benchmark-results.json ../baseline-results.json || echo "{}" > ../baseline-results.json
+
+      - name: Compare performance results
+        id: compare
+        run: |
+          # Compare results using Node.js
+          node << 'EOF'
+          const fs = require('fs');
+          
+          const prResults = JSON.parse(fs.readFileSync('pr-results.json', 'utf8') || '{}');
+          const baselineResults = JSON.parse(fs.readFileSync('baseline-results.json', 'utf8') || '{}');
+          
+          const threshold = parseFloat(process.env.PERFORMANCE_DEGRADATION_THRESHOLD);
+          let hasDegradation = false;
+          const comparisons = [];
+          
+          // Compare each endpoint
+          if (prResults.results && baselineResults.results) {
+            for (const [name, prData] of Object.entries(prResults.results)) {
+              const baselineData = baselineResults.results[name];
+              if (!baselineData) continue;
+              
+              const prAvg = prData.sequential?.avgDuration || 0;
+              const baselineAvg = baselineData.sequential?.avgDuration || 0;
+              
+              if (baselineAvg > 0) {
+                const change = ((prAvg - baselineAvg) / baselineAvg) * 100;
+                const isDegradation = change > threshold;
+                
+                comparisons.push({
+                  endpoint: name,
+                  baseline: baselineAvg.toFixed(2),
+                  current: prAvg.toFixed(2),
+                  change: change.toFixed(2),
+                  isDegradation
+                });
+                
+                if (isDegradation) {
+                  hasDegradation = true;
+                }
+              }
+            }
+          }
+          
+          // Output results
+          console.log('PERFORMANCE_COMPARISON<<PERFORMANCE_EOF');
+          console.log(JSON.stringify(comparisons, null, 2));
+          console.log('PERFORMANCE_EOF');
+          
+          // Set output
+          const fs2 = require('fs');
+          fs2.appendFileSync(process.env.GITHUB_OUTPUT, `has_degradation=${hasDegradation}\n`);
+          fs2.appendFileSync(process.env.GITHUB_OUTPUT, `comparisons=${JSON.stringify(comparisons)}\n`);
+          
+          if (hasDegradation) {
+            console.log('::error::Performance degradation detected!');
+            process.exit(1);
+          }
+          EOF
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-performance-results
+          path: |
+            pr-results.json
+            baseline-results.json
+          retention-days: 30
+
+  # ============================================================
+  # Frontend Bundle Size Check
+  # ============================================================
+  frontend-bundle-size:
+    name: Frontend Bundle Size
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v4
+
+      - name: Checkout main branch for baseline
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          path: baseline
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: ${{ runner.os }}-frontend-node-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Install dependencies (PR)
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install dependencies (Baseline)
+        working-directory: baseline/frontend
+        run: npm ci
+
+      - name: Build PR bundle
+        working-directory: frontend
+        env:
+          NODE_ENV: production
+        run: |
+          npm run build
+          du -sb dist > ../pr-bundle-size.txt
+          echo "PR bundle size: $(cat ../pr-bundle-size.txt)"
+
+      - name: Build baseline bundle
+        working-directory: baseline/frontend
+        env:
+          NODE_ENV: production
+        run: |
+          npm run build
+          du -sb dist > ../baseline-bundle-size.txt
+          echo "Baseline bundle size: $(cat ../baseline-bundle-size.txt)"
+
+      - name: Compare bundle sizes
+        id: compare-bundle
+        run: |
+          PR_SIZE=$(cat pr-bundle-size.txt | cut -f1)
+          BASELINE_SIZE=$(cat baseline-bundle-size.txt | cut -f1)
+          
+          # Calculate change
+          CHANGE=$((PR_SIZE - BASELINE_SIZE))
+          CHANGE_PERCENT=$(echo "scale=2; ($CHANGE / $BASELINE_SIZE) * 100" | bc)
+          
+          echo "PR Bundle Size: $PR_SIZE bytes ($(echo "scale=2; $PR_SIZE / 1024" | bc) KB)"
+          echo "Baseline Bundle Size: $BASELINE_SIZE bytes ($(echo "scale=2; $BASELINE_SIZE / 1024" | bc) KB)"
+          echo "Change: $CHANGE bytes ($CHANGE_PERCENT%)"
+          
+          # Check against threshold
+          if [ $PR_SIZE -gt ${{ env.BUNDLE_SIZE_THRESHOLD }} ]; then
+            echo "::error::Bundle size ($PR_SIZE bytes) exceeds threshold (${{ env.BUNDLE_SIZE_THRESHOLD }} bytes)"
+            echo "exceeds_threshold=true" >> $GITHUB_OUTPUT
+          else
+            echo "exceeds_threshold=false" >> $GITHUB_OUTPUT
+          fi
+          
+          # Save comparison data
+          echo "pr_size=$PR_SIZE" >> $GITHUB_OUTPUT
+          echo "baseline_size=$BASELINE_SIZE" >> $GITHUB_OUTPUT
+          echo "change_percent=$CHANGE_PERCENT" >> $GITHUB_OUTPUT
+
+      - name: Upload bundle analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-bundle-analysis
+          path: |
+            frontend/dist
+            pr-bundle-size.txt
+            baseline-bundle-size.txt
+          retention-days: 7
+
+  # ============================================================
+  # Lighthouse Performance Audit
+  # ============================================================
+  lighthouse-audit:
+    name: Lighthouse Audit
+    runs-on: ubuntu-latest
+    needs: [frontend-bundle-size]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          NODE_ENV: production
+        run: npm run build
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          configPath: './frontend/lighthouserc.json'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+        continue-on-error: true
+
+  # ============================================================
+  # Post Performance Results as PR Comment
+  # ============================================================
+  post-results:
+    name: Post Performance Results
+    runs-on: ubuntu-latest
+    needs: [backend-performance, frontend-bundle-size]
+    if: always() && github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        continue-on-error: true
+
+      - name: Generate performance report comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let comment = '## 📊 Performance Report\n\n';
+            
+            // Backend Performance
+            comment += '### Backend Performance\n\n';
+            if (fs.existsSync('backend-performance-results/pr-results.json')) {
+              const prResults = JSON.parse(fs.readFileSync('backend-performance-results/pr-results.json', 'utf8'));
+              
+              comment += '| Endpoint | Baseline (ms) | Current (ms) | Change | Status |\n';
+              comment += '|----------|---------------|--------------|--------|--------|\n';
+              
+              // Add endpoint comparisons
+              if (prResults.results) {
+                for (const [name, data] of Object.entries(prResults.results)) {
+                  const avg = data.sequential?.avgDuration?.toFixed(2) || 'N/A';
+                  const p95 = data.sequential?.p95?.toFixed(2) || 'N/A';
+                  comment += `| ${name} | - | ${avg} | - | ⏳ |\n`;
+                }
+              }
+            } else {
+              comment += '❌ Backend performance check failed\n';
+            }
+            
+            // Bundle Size
+            comment += '\n### Frontend Bundle Size\n\n';
+            if (fs.existsSync('frontend-bundle-analysis/pr-bundle-size.txt')) {
+              const prSize = parseInt(fs.readFileSync('frontend-bundle-analysis/pr-bundle-size.txt', 'utf8'));
+              const baselineSize = parseInt(fs.readFileSync('frontend-bundle-analysis/baseline-bundle-size.txt', 'utf8'));
+              const change = prSize - baselineSize;
+              const changePercent = ((change / baselineSize) * 100).toFixed(2);
+              
+              const sizeEmoji = prSize > 512000 ? '🔴' : prSize > 400000 ? '🟡' : '🟢';
+              const changeEmoji = change > 0 ? '🔺' : change < 0 ? '🔽' : '➡️';
+              
+              comment += `| Metric | Value |\n`;
+              comment += `|--------|-------|\n`;
+              comment += `| PR Bundle Size | ${sizeEmoji} ${(prSize / 1024).toFixed(2)} KB |\n`;
+              comment += `| Baseline Size | ${(baselineSize / 1024).toFixed(2)} KB |\n`;
+              comment += `| Change | ${changeEmoji} ${change > 0 ? '+' : ''}${(change / 1024).toFixed(2)} KB (${changePercent}%) |\n`;
+              
+              if (prSize > 512000) {
+                comment += '\n⚠️ **Warning:** Bundle size exceeds 500KB budget\n';
+              }
+            } else {
+              comment += '❌ Bundle size check failed\n';
+            }
+            
+            // Summary
+            comment += '\n### Summary\n\n';
+            const backendSuccess = '${{ needs.backend-performance.result }}' === 'success';
+            const bundleSuccess = '${{ needs.frontend-bundle-size.result }}' === 'success';
+            
+            if (backendSuccess && bundleSuccess) {
+              comment += '✅ All performance checks passed\n';
+            } else {
+              comment += '❌ Some performance checks failed\n';
+            }
+            
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+            
+            const botComment = comments.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('📊 Performance Report')
+            );
+            
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+            }
+
+  # ============================================================
+  # Performance Quality Gate
+  # ============================================================
+  performance-gate:
+    name: Performance Quality Gate
+    runs-on: ubuntu-latest
+    needs: [backend-performance, frontend-bundle-size, lighthouse-audit]
+    if: always()
+    steps:
+      - name: Evaluate performance gates
+        run: |
+          echo "## Performance Quality Gate Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend Performance | ${{ needs.backend-performance.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend Bundle Size | ${{ needs.frontend-bundle-size.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lighthouse Audit | ${{ needs.lighthouse-audit.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ needs.backend-performance.result }}" = "success" ] && \
+             [ "${{ needs.frontend-bundle-size.result }}" = "success" ] && \
+             [ "${{ needs.lighthouse-audit.result }}" = "success" -o "${{ needs.lighthouse-audit.result }}" = "skipped" ]; then
+            echo "✅ All performance quality gates passed!" >> $GITHUB_STEP_SUMMARY
+            exit 0
+          else
+            echo "❌ Some performance quality gates failed!" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
