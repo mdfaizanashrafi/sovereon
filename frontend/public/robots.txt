@@ -15,8 +15,6 @@ Disallow: /api/
 Disallow: /thank-you/
 Disallow: /404
 
-Host: https://sovereon.online
-
 # Crawl-delay for aggressive bots
 User-agent: AhrefsBot
 Crawl-delay: 1
