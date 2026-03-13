@@ -1,21 +1,45 @@
-# robots.txt for sovereign.online
+# robots.txt for sovereon.online
 # Last updated: March 2026
 
+# ==============================
+# Global rules
+# ==============================
 User-agent: *
 Allow: /
 
-# Sitemap location
-Sitemap: https://sovereon.online/sitemap.xml
-
-# Disallow admin and API routes
+# Disallow sensitive or utility pages
 Disallow: /admin/
 Disallow: /api/
-
-# Disallow utility pages
 Disallow: /thank-you/
 Disallow: /404
 
-# Crawl-delay for aggressive bots
+# ==============================
+# Major search engines
+# ==============================
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# ==============================
+# AI Crawlers
+# ==============================
+User-agent: GPTBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# ==============================
+# SEO crawler rate limits
+# ==============================
 User-agent: AhrefsBot
 Crawl-delay: 1
 
@@ -25,9 +49,7 @@ Crawl-delay: 1
 User-agent: MJ12bot
 Crawl-delay: 2
 
-# Allow major search engines full access
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
+# ==============================
+# Sitemap
+# ==============================
+Sitemap: https://sovereon.online/sitemap.xml
